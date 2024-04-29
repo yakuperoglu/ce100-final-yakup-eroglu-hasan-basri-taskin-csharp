@@ -42,7 +42,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = "Calculator Application with Library"
+PROJECT_NAME           = "Taskscheduler Application with Library"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -917,8 +917,8 @@ WARN_LOGFILE           = doxygen.log
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = CalculatorLibrary \
-                         CalculatorApp \
+INPUT                  = TaskschedulerLibrary \
+                         TaskschedulerApp \
                          README.md
 
 # This tag can be used to specify the character encoding of the source files

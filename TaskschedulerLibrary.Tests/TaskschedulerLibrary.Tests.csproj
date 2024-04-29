@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CalculatorLibrary\CalculatorLibrary.csproj" />
+    <ProjectReference Include="..\TaskschedulerLibrary\TaskschedulerLibrary.csproj" />
   </ItemGroup>
 
 </Project>

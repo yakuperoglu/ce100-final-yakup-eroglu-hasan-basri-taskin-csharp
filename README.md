@@ -424,49 +424,49 @@ dotnet --version
 ### Create Solution with Name
 
 ```batch
-dotnet new sln -n CalculatorLibrary
+dotnet new sln -n TaskschedulerLibrary
 ```
 
 ### Create Project Class Library with Name
 
 ```batch
-dotnet new classlib -n CalculatorLibrary
+dotnet new classlib -n TaskschedulerLibrary
 ```
 
 ### Add Project to Solution
 
 ```batch
- dotnet sln add CalculatorLibrary
+ dotnet sln add TaskschedulerLibrary
 ```
 
 ### Create XUnit Test for Project
 
 ```batch
-dotnet new xunit -n CalculatorLibrary.Tests
+dotnet new xunit -n TaskschedulerLibrary.Tests
 ```
 
 ### Add Project to UnitTest Dependecy
 
 ```batch
-dotnet add CalculatorLibrary.Tests/CalculatorLibrary.Tests.csproj reference CalculatorLibrary/CalculatorLibrary.csproj
+dotnet add TaskschedulerLibrary.Tests/TaskschedulerLibrary.Tests.csproj reference TaskschedulerLibrary/TaskschedulerLibrary.csproj
 ```
 
 ### Add Consol Application
 
 ```batch
-dotnet new console -n CalculatorApp
+dotnet new console -n TaskschedulerApp
 ```
 
 ### Add Console Application to Solution
 
 ```batch
-dotnet sln add CalculatorApp
+dotnet sln add TaskschedulerApp
 ```
 
 ### Add Library to Application Dependecy
 
 ```batch
-dotnet add CalculatorApp/CalculatorApp.csproj reference CalculatorLibrary/CalculatorLibrary.csproj
+dotnet add TaskschedulerApp/TaskschedulerApp.csproj reference TaskschedulerLibrary/TaskschedulerLibrary.csproj
 ```
 
 After this step commit and push your work. 
