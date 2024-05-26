@@ -131,3 +131,109 @@ namespace TaskschedulerLibrary
          */
         public double Flow { get; set; }
     }
+    public class Taskscheduler
+    {
+
+        /**
+         * @brief A secret key used for encryption or other secure operations.
+         */
+        private string secretKey = "1234567890123456";
+
+        /**
+         * @brief Indicates whether the system is in test mode.
+         */
+        public bool IsTestMode { get; set; } = false;
+
+        /**
+         * @brief Indicates whether to bypass certain checks or validations.
+         */
+        public bool Bypass { get; set; } = true;
+
+        /**
+         * @brief Gets or sets the currently logged-in user.
+         */
+        public User LoggedInUser { get; set; }
+        /**
+ * @brief Handles input errors by displaying an error message.
+ * @return Always returns false to indicate an error.
+ */
+        public bool HandleInputError()
+        {
+            Console.WriteLine("Only enter numerical value");
+            return false;
+        }
+        /**
+  * @brief Clears the console screen, unless the library system is in test mode.
+  */
+        public void ClearScreen()
+        {
+            if (IsTestMode)
+            {
+                return; // Test modundayken konsolu temizleme
+            }
+
+            Console.Clear();
+        }
+        /**
+ * @brief Prompts the user to press any key to continue.
+ * @return Always returns true.
+ */
+        public bool EnterToContinue()
+        {
+            Console.Write("Press any key to continue... ");
+            if (!IsTestMode)
+            {
+                Console.ReadKey();
+            }
+            return true;
+        }
+        /**
+ * @brief Displays the main menu and handles user input.
+ * @param pathFileUsers Path to the file containing user data.
+ * @param pathFileTasks Path to the file containing task data.
+ * @param pathFileCategories Path to the file containing category data.
+ * @return Returns 0 to indicate program exit.
+ */
+        public int MainMenu(string pathFileUsers, string pathFileTasks, string pathFileCategories)
+        {
+            int choice;
+
+            while (true)
+            {
+                ClearScreen();
+                PrintMainMenu();
+                if (!int.TryParse(Console.ReadLine(), out choice))
+                {
+                    HandleInputError();
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        ClearScreen();
+                        if (LoginUserMenu(pathFileUsers))
+                            UserOperationsMenu(pathFileTasks, pathFileCategories, pathFileUsers);
+                        break;
+
+                    case 2:
+                        ClearScreen();
+                        RegisterMenu(pathFileUsers);
+                        break;
+
+                    case 3:
+                        ClearScreen();
+                        GuestOperation(pathFileCategories);
+                        break;
+
+                    case 4:
+                        Console.WriteLine("Exit Program");
+                        return 0;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        EnterToContinue();
+                        break;
+                }
+            }
+        }
