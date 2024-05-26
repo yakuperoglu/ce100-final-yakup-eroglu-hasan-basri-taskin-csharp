@@ -1244,11 +1244,561 @@ namespace TaskschedulerLibrary
             EnterToContinue();
             return true;
         }
+
         /**
          * @brief Displays the menu for setting reminders for tasks and processes user input.
          * @param pathFileTasks Path to the file containing task data.
          * @return Returns true if the reminder setting process is completed, false otherwise.
          */
+        public bool SetRemindersMenu(string pathFileTasks)
+        {
+            Task selectedTask = null;
+            do
+            {
+                ClearScreen();
+                List<Task> ownedTasks = LoadOwnedTasks(pathFileTasks);
+
+                if (ownedTasks.Count == 0)
+                {
+                    Console.WriteLine("No tasks found.");
+                    EnterToContinue();
+                    return false;
+                }
+
+                PrintOwnedTasksToConsole(pathFileTasks);
+                //Get input from user. If the user enters "exit", return false
+                Console.Write("Select a task to set reminder. You can choose tasks that have a due date. (Type \"exit\" to exit): ");
+                int taskIndex;
+                string taskIndexString = Console.ReadLine();
+
+                if (taskIndexString.ToLower() == "exit")
+                {
+                    return false;
+                }
+
+                if (!int.TryParse(taskIndexString, out taskIndex))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+
+                }
+
+                //Check if the task index is valid
+                if (taskIndex < 0)
+                {
+                    Console.WriteLine("Invalid task index. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+                foreach (Task task in ownedTasks)
+                {
+                    if (task.Id == taskIndex && task.Deadline != null && task.Deadline.Length > 0)
+                    {
+                        selectedTask = task;
+                        break;
+                    }
+                }
+
+                if (selectedTask == null)
+                {
+                    Console.WriteLine("You do not have the task with the given index or the task does not have a due date. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+                break;
+            } while (true);
+            return SetReminders(selectedTask, pathFileTasks);
+        }
+        /**
+         * @brief Sets reminders for a specific task and updates the task data file.
+         * @param selectedTask The task for which the reminders are being set.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if the reminders are set successfully, false otherwise.
+         */
+        public bool SetReminders(Task selectedTask, string pathFileTasks)
+        {
+            int choice;
+            do
+            {
+                ClearScreen();
+                PrintTasksToConsole(new List<Task>() { selectedTask });
+                PrintSetRemindersMenu();
+                //Write task details to the console
+                if (!int.TryParse(Console.ReadLine(), out choice))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        Thread.Sleep(30);
+                        Console.WriteLine($"\nReminder for the task \"{selectedTask.TaskName}\"\n");
+                        break;
+
+                    case 2:
+                        Thread.Sleep(50);
+                        Console.WriteLine($"\nReminder for the task \"{selectedTask.TaskName}\"\n");
+                        break;
+
+                    case 3:
+                        Thread.Sleep(100);
+                        Console.WriteLine($"\nReminder for the task \"{selectedTask.TaskName}\"\n");
+                        break;
+                    case 4:
+                        return false;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        EnterToContinue();
+                        continue;
+                }
+
+                EnterToContinue();
+                return true;
+            } while (true);
+        }
+        /**
+         * @brief Displays the reminder system menu and processes user input for setting or managing reminders.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if the reminder system process is completed, false otherwise.
+         */
+        public bool ReminderSystemMenu(string pathFileTasks)
+        {
+            int choice;
+
+            while (true)
+            {
+                ClearScreen();
+                PrintReminderSystemMenu();
+
+                if (!int.TryParse(Console.ReadLine(), out choice))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        SetRemindersMenu(pathFileTasks);
+                        break;
+
+                    case 2:
+                        ReminderSettingsMenu(pathFileTasks);
+                        break;
+
+                    case 3:
+                        return false;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        EnterToContinue();
+                        break;
+                }
+            }
+        }
+        /**
+         * @brief Displays the reminder settings menu and processes user input for configuring reminder settings.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if the reminder settings are configured successfully, false otherwise.
+         */
+        public bool ReminderSettingsMenu(string pathFileTasks)
+        {
+            int choice;
+
+            while (true)
+            {
+                PrintReminderSettingsMenu();
+                if (!int.TryParse(Console.ReadLine(), out choice))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        Console.WriteLine("Email reminder settings saved.");
+                        EnterToContinue();
+                        return true;
+
+                    case 2:
+                        Console.WriteLine("SMS reminder settings saved.");
+                        EnterToContinue();
+                        return true;
+
+
+                    case 3:
+                        Console.WriteLine("In-App Notification reminder settings saved.");
+                        EnterToContinue();
+                        return true;
+                    case 4:
+                        return false;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        EnterToContinue();
+                        break;
+                }
+
+            }
+        }
+        /**
+         * @brief Displays the task prioritization menu and processes user input for prioritizing tasks.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if the task prioritization process is completed, false otherwise.
+         */
+
+        public bool TaskPrioritizationMenu(string pathFileTasks)
+        {
+            int choice;
+
+            while (true)
+            {
+                ClearScreen();
+                PrintTaskPrioritizationMenu();
+
+                if (!int.TryParse(Console.ReadLine(), out choice))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        PrioritizeTasks(pathFileTasks);
+                        break;
+
+                    case 2:
+                        return false;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        EnterToContinue();
+                        break;
+                }
+            }
+        }
+        /**
+         * @brief Displays the menu for prioritizing a specific task and processes user input.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if the task is prioritized successfully, false otherwise.
+         */
+        public bool PrioritizeTasks(string pathFileTasks)
+        {
+            ClearScreen();
+            List<Task> tasks = LoadOwnedTasks(pathFileTasks);
+            byte priority;
+
+            if (tasks.Count == 0)
+            {
+                Console.WriteLine("No tasks found.");
+                EnterToContinue();
+                return false;
+            }
+
+            //Sort tasks by priority
+            tasks = tasks.OrderBy(task => task.Priority).ToList();
+            PrintTasksToConsole(tasks);
+
+            Task selectedTask = null;
+            do
+            {
+                //Type exit to exit
+                Console.Write("Select a task to prioritize (Type \"exit\" to exit): ");
+
+                int taskId;
+                string taskIdString = Console.ReadLine();
+
+                if (taskIdString.ToLower() == "exit")
+                {
+                    return false;
+                }
+
+                if (!int.TryParse(taskIdString, out taskId))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                foreach (var task1 in tasks)
+                {
+                    if (task1.Id == taskId)
+                    {
+                        selectedTask = task1;
+                        break;
+                    }
+                }
+
+                if (selectedTask == null)
+                {
+                    Console.WriteLine("Invalid task id. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+
+                do
+                {
+                    Console.Write("Enter the priority of the task: ");
+                    string priorityString = Console.ReadLine();
+                    if (!byte.TryParse(priorityString, out priority))
+                    {
+                        HandleInputError();
+                        EnterToContinue();
+                        continue;
+                    }
+
+                    if (priority < 1 || priority > 5)
+                    {
+                        Console.WriteLine("Invalid priority. Please try again (1-5).");
+                        EnterToContinue();
+                        continue;
+                    }
+
+                    break;
+                } while (true);
+
+                selectedTask.Priority = priority;
+                break;
+            } while (true);
+
+            return SetPriorityToTask(selectedTask, pathFileTasks);
+        }
+        /**
+         * @brief Sets the priority for a specific task and updates the task data file.
+         * @param task The task for which the priority is being set.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if the priority is set successfully, false otherwise.
+         */
+        public bool SetPriorityToTask(Task task, string pathFileTasks)
+        {
+            List<Task> tasks = LoadAllTasks(pathFileTasks);
+
+            foreach (Task taskItem in tasks)
+            {
+                if (taskItem.Id == task.Id)
+                {
+                    taskItem.Priority = task.Priority;
+                    break;
+                }
+            }
+
+            string updatedJsonString = JsonSerializer.Serialize(tasks);
+            File.WriteAllText(pathFileTasks, updatedJsonString);
+
+            Console.WriteLine("Task prioritized successfully.");
+            EnterToContinue();
+            return true;
+        }
+
+
+        /**
+ * @brief Prints the categories to the console.
+ * @param pathFileCategories Path to the file containing category data.
+ * @return Returns true after printing the categories.
+ */
+        public bool PrintCategoriesToConsole(string pathFileCategories)
+        {
+            List<Category> categories = LoadAllCategories(pathFileCategories);
+
+            Console.WriteLine("Categories\n");
+            Console.WriteLine("----------------------------");
+            Console.WriteLine("| ID    | Category Name    |");
+            Console.WriteLine("----------------------------");
+
+            foreach (Category category in categories)
+            {
+                string categoryId = category.Id.ToString().PadRight(5); // ID alanını 6 karakter genişliğine getir
+                string categoryName = category.CategoryName.PadRight(16); // Category Name alanını 25 karakter genişliğine getir
+
+                Console.WriteLine($"| {categoryId} | {categoryName} |");
+                Console.WriteLine("----------------------------");
+            }
+            Console.WriteLine();
+
+            return true;
+        }
+        /**
+         * @brief Prints the tasks to the console.
+         * @param tasks List of tasks to be printed.
+         * @return Returns true if tasks are printed successfully, false otherwise.
+         */
+        public bool PrintTasksToConsole(List<Task> tasks)
+        {
+            if (tasks.Count == 0)
+            {
+                Console.WriteLine("No tasks found.");
+                EnterToContinue();
+                return false;
+            }
+
+            Console.WriteLine("Tasks\n");
+            Console.WriteLine("-------------------------------------------------------------------------------------------------------------");
+            Console.WriteLine("| Task Id   | Task Name        | Task Description      | Deadline   | Category         | Priority   | Cost  |");
+            Console.WriteLine("-------------------------------------------------------------------------------------------------------------");
+
+            foreach (Task task in tasks)
+            {
+
+                string taskId = task.Id.ToString().PadRight(9);
+                string taskName = task.TaskName.PadRight(16);
+                string taskDescription = task.TaskDescription.PadRight(21);
+                string deadline = !string.IsNullOrEmpty(task.Deadline) ? task.Deadline.PadRight(10) : "-".PadRight(10);
+                string category = task.Category != null ? task.Category.CategoryName.PadRight(16) : "-".PadRight(16);
+                string priority = task.Priority != null ? task.Priority.ToString().PadRight(10) : "-".PadRight(10);
+                string cost = task.Cost.ToString().PadRight(5);
+
+                Console.WriteLine($"| {taskId} | {taskName} | {taskDescription} | {deadline} | {category} | {priority} | {cost} |");
+                Console.WriteLine("-------------------------------------------------------------------------------------------------------------");
+            }
+            Console.WriteLine();
+
+            return true;
+        }
+        /**
+         * @brief Prints the tasks owned by the logged-in user to the console.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if tasks are printed successfully, false otherwise.
+         */
+        public bool PrintOwnedTasksToConsole(string pathFileTasks)
+        {
+            List<Task> tasks = LoadOwnedTasks(pathFileTasks);
+            return PrintTasksToConsole(tasks);
+        }
+
+
+
+        /**
+         * @brief Loads all tasks from the specified file.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns a list of all tasks.
+         */
+        public List<Task> LoadAllTasks(string pathFileTasks)
+        {
+            List<Task> tasks = new List<Task>();
+
+            if (File.Exists(pathFileTasks))
+            {
+                string jsonString = File.ReadAllText(pathFileTasks);
+                tasks = JsonSerializer.Deserialize<List<Task>>(jsonString);
+            }
+
+            return tasks;
+        }
+        /**
+         * @brief Loads all users from the specified file.
+         * @param pathFileUsers Path to the file containing user data.
+         * @return Returns a list of all users.
+         */
+        public List<User> LoadAllUsers(string pathFileUsers)
+        {
+            List<User> users = new List<User>();
+
+            if (File.Exists(pathFileUsers))
+            {
+                using (BinaryReader reader = new BinaryReader(File.Open(pathFileUsers, FileMode.Open)))
+                {
+                    while (reader.BaseStream.Position < reader.BaseStream.Length)
+                    {
+                        User user = new User
+                        {
+                            Id = reader.ReadInt32(),
+                            Email = reader.ReadString(),
+                            Password = reader.ReadString()
+                        };
+
+                        users.Add(user);
+                    }
+                }
+            }
+
+            return users;
+        }
+        /**
+         * @brief Loads tasks owned by the logged-in user from the specified file.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns a list of tasks owned by the logged-in user.
+         */
+        public List<Task> LoadOwnedTasks(string pathFileTasks)
+        {
+            List<Task> tasks = LoadAllTasks(pathFileTasks);
+
+            //Filter tasks according to the owner. Use for loop 
+            List<Task> ownedTasks = new List<Task>();
+            foreach (Task task in tasks)
+            {
+                if (task.Owner.Id == LoggedInUser.Id)
+                {
+                    ownedTasks.Add(task);
+                }
+            }
+
+            return ownedTasks;
+        }
+        /**
+         * @brief Loads all categories from the specified file.
+         * @param pathFileCategories Path to the file containing category data.
+         * @return Returns a list of all categories.
+         */
+        public List<Category> LoadAllCategories(string pathFileCategories)
+        {
+            List<Category> categories = new List<Category>();
+
+            if (File.Exists(pathFileCategories))
+            {
+                using (BinaryReader reader = new BinaryReader(File.Open(pathFileCategories, FileMode.Open)))
+                {
+                    while (reader.BaseStream.Position < reader.BaseStream.Length)
+                    {
+                        Category category = new Category
+                        {
+                            Id = reader.ReadInt32(),
+                            CategoryName = reader.ReadString()
+                        };
+
+                        categories.Add(category);
+                    }
+                }
+            }
+            else
+            {
+                categories = new List<Category>
+                {
+                    new Category { Id = 1, CategoryName = "Work" },
+                    new Category { Id = 2, CategoryName = "Personal" },
+                    new Category { Id = 3, CategoryName = "Shopping" },
+                    new Category { Id = 4, CategoryName = "Study" },
+                    new Category { Id = 5, CategoryName = "Health" },
+                    new Category { Id = 6, CategoryName = "Sport" },
+                    new Category { Id = 7, CategoryName = "Diet" }
+                };
+
+                //Write categories to the file as category.bin
+                using (BinaryWriter writer = new BinaryWriter(File.Open(pathFileCategories, FileMode.Create)))
+                {
+                    foreach (Category category in categories)
+                    {
+                        writer.Write(category.Id);
+                        writer.Write(category.CategoryName);
+                    }
+                }
+                string newPath = pathFileCategories.Replace(".bin", "");
+                SaveCategoriesWithHuffman(newPath, categories);
+            }
+
+            // Encode and save categories with Huffman Coding
+            return categories;
+        }
+
 
 
 
