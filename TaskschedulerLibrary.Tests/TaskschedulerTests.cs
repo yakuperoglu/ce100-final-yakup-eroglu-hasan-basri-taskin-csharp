@@ -447,5 +447,101 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.True(result);
         }
+
+        [Fact]
+        public void SetRemindersMenu_DoesntHaveEnoughTasks_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+
+            bool result = taskScheduler.SetRemindersMenu(testFilePathTasks);
+
+
+            // Assert
+            Assert.False(result);
+        }
+        [Fact]
+        public void SetRemindersMenu_InvalidInputs_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+            var input = new StringReader("Invalid\n-1\nExit\n");
+            Console.SetIn(input);
+
+            bool result = taskScheduler.SetRemindersMenu(testFilePathTasks);
+
+
+            // Assert
+            Assert.False(result);
+        }
+        [Fact]
+        public void SetRemindersMenu_ValidInputs_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+            var input = new StringReader("1\n4\n");
+            Console.SetIn(input);
+
+            bool result = taskScheduler.SetRemindersMenu(testFilePathTasks);
+
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void SetReminders_CaseOne_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var task = new Task
+            {
+                Id = 1,
+                TaskName = "Task1",
+                TaskDescription = "TaskDescription1",
+                Category = new Category { Id = 1, CategoryName = "Work" },
+                Owner = new User { Id = 1, Email = "test1", Password = "test1" },
+                Deadline = DateTime.Now.AddDays(1).ToString(),
+                Priority = 1,
+                Cost = 5555
+            };
+            var input = new StringReader("Invalid\n5\n1\n");
+            Console.SetIn(input);
+            bool result = taskScheduler.SetReminders(task, testFilePathTasks);
+
+
+            // Assert
+            Assert.True(result);
+        }
+        [Fact]
+        public void SetReminders_CaseTwo_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var task = new Task
+            {
+                Id = 1,
+                TaskName = "Task1",
+                TaskDescription = "TaskDescription1",
+                Category = new Category { Id = 1, CategoryName = "Work" },
+                Owner = new User { Id = 1, Email = "test1", Password = "test1" },
+                Deadline = DateTime.Now.AddDays(1).ToString(),
+                Priority = 1,
+                Cost = 5555
+            };
+            var input = new StringReader("2\n");
+            Console.SetIn(input);
+            bool result = taskScheduler.SetReminders(task, testFilePathTasks);
+
+
+            // Assert
+            Assert.True(result);
+        }
     }
 }
