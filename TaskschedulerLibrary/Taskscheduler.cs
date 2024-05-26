@@ -745,3 +745,510 @@ namespace TaskschedulerLibrary
         }
 
 
+        /**
+        // * @brief Prints tasks with similar names for a given user.
+        // * @param pathFileTasks Path to the file containing task data.
+        // * @return Returns true after displaying similar tasks.
+        // */
+        public bool FindSimilarTasksMenu(string pathFileTasks)
+        {
+            ClearScreen();
+            double similarityThreshold = 0.5;
+            // Get tasks owned by the user
+            var userTasks = LoadOwnedTasks(pathFileTasks);
+
+            Console.WriteLine("Similar Tasks\n");
+            // Compare each task with each other
+            int taskCount = 0;
+            for (int i = 0; i < userTasks.Count; i++)
+            {
+                for (int j = i + 1; j < userTasks.Count; j++)
+                {
+                    int lcsLength = CalculateLongestCommonSubsequence(userTasks[i].TaskName, userTasks[j].TaskName);
+                    int maxLength = Math.Max(userTasks[i].TaskName.Length, userTasks[j].TaskName.Length);
+                    double similarity = (double)lcsLength / maxLength;
+
+                    // If similarity is above threshold, print the tasks
+                    if (similarity >= similarityThreshold)
+                    {
+                        taskCount++;
+                        Console.WriteLine($"{taskCount}) {userTasks[i].TaskName} and {userTasks[j].TaskName}");
+                    }
+                }
+            }
+
+            EnterToContinue();
+            return true;
+        }
+        /**
+ * @brief Finds and prints similar users by task category using BFS or DFS.
+ * @param pathFileUsers Path to the file containing user data.
+ * @param pathFileTasks Path to the file containing task data.
+ * @return Returns true after displaying similar users.
+ */
+        public bool FindSimilarUsersByTaskCategoryMenu(string pathFileUsers, string pathFileTasks)
+        {
+            ClearScreen();
+            List<User> usersList = LoadAllUsers(pathFileUsers);
+            List<Task> tasksList = LoadAllTasks(pathFileTasks);
+            if (usersList.Count < 2 || tasksList.Count < 2)
+            {
+                Console.WriteLine("Not enough users or tasks to find similar users.");
+                EnterToContinue();
+                return false;
+            }
+
+            Dictionary<int, Task> tasks = new Dictionary<int, Task>();
+            Dictionary<int, User> users = new Dictionary<int, User>();
+
+            foreach (var user in usersList)
+            {
+                if (!users.ContainsKey(user.Id))
+                {
+                    users.Add(user.Id, user);
+                }
+            }
+
+            foreach (var task in tasksList)
+            {
+                if (!tasks.ContainsKey(task.Id))
+                {
+                    tasks.Add(task.Id, task);
+                }
+            }
+
+            Random random = new Random();
+            int startTaskId = tasks.Keys.ElementAt(random.Next(tasks.Count));
+
+            //Ask to user which algorithm will be used. BFS or DFS
+            List<User> similarUsers = null;
+            while (true)
+            {
+                Console.WriteLine("Choose an algorithm to find similar users:");
+                Console.WriteLine("1. BFS");
+                Console.WriteLine("2. DFS");
+                Console.Write("Please enter a number to select: ");
+                int choice;
+                if (!int.TryParse(Console.ReadLine(), out choice))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        similarUsers = FindSimilarUsersByTaskCategoryBFS(tasks, users, startTaskId);
+                        break;
+                    case 2:
+                        similarUsers = FindSimilarUsersByTaskCategoryDFS(tasks, users, startTaskId);
+                        break;
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        EnterToContinue();
+                        break;
+                }
+
+                if (similarUsers != null)
+                {
+                    break;
+                }
+            }
+
+            //Write similar users to the console
+            Console.WriteLine("Similar Users\n");
+            Console.WriteLine("----------------------------");
+            Console.WriteLine("| ID    | Email            |");
+            Console.WriteLine("----------------------------");
+            foreach (var similarUser in similarUsers)
+            {
+                string userId = similarUser.Id.ToString().PadRight(5);
+                string userEmail = similarUser.Email.PadRight(16);
+
+                Console.WriteLine($"| {userId} | {userEmail} |");
+                Console.WriteLine("----------------------------");
+            }
+
+            EnterToContinue();
+            return true;
+        }
+        /**
+         * @brief Finds the shortest path between tasks using Prim's algorithm.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true after finding and displaying the shortest path.
+         */
+        //MST PRIM algorithm
+        public bool TheShortestPathBetweenTasks(string pathFileTasks)
+        {
+            // Load owned tasks user
+            List<Task> tasks = LoadOwnedTasks(pathFileTasks);
+            if (tasks.Count < 2)
+            {
+                Console.WriteLine("Not enough tasks to find the shortest path.");
+                EnterToContinue();
+                return false;
+            }
+
+            // Form the edges (for example, random costs between each task)
+            Dictionary<Tuple<int, int>, int> edges = new Dictionary<Tuple<int, int>, int>();
+            Random rand = new Random();
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                for (int j = i + 1; j < tasks.Count; j++)
+                {
+                    int cost = rand.Next(1, 10); // Rastgele maliyetler üret
+                    edges.Add(new Tuple<int, int>(tasks[i].Id, tasks[j].Id), cost);
+                    edges.Add(new Tuple<int, int>(tasks[j].Id, tasks[i].Id), cost);
+                }
+            }
+
+            // Define the necessary structures for Prim's Algorithm.
+            int numTasks = tasks.Count;
+            int[] key = new int[numTasks]; // Key values used to pick minimum weight edge in cut
+            bool[] mstSet = new bool[numTasks]; // To represent set of vertices included in MST
+            int[] parent = new int[numTasks]; // Array to store constructed MST
+
+            for (int i = 0; i < numTasks; i++)
+            {
+                key[i] = int.MaxValue;
+                mstSet[i] = false;
+                parent[i] = -1;
+            }
+
+            key[0] = 0; // Start Point
+
+            for (int count = 0; count < numTasks - 1; count++)
+            {
+                int u = MinKey(key, mstSet, numTasks);
+                mstSet[u] = true;
+
+                for (int v = 0; v < numTasks; v++)
+                {
+                    if (edges.ContainsKey(new Tuple<int, int>(tasks[u].Id, tasks[v].Id)) && !mstSet[v] && edges[new Tuple<int, int>(tasks[u].Id, tasks[v].Id)] < key[v])
+                    {
+                        parent[v] = u;
+                        key[v] = edges[new Tuple<int, int>(tasks[u].Id, tasks[v].Id)];
+                    }
+                }
+            }
+
+            PrintMST(parent, numTasks, tasks, key);
+            return true;
+        }
+        /**
+         * @brief Finds the vertex with the minimum key value that is not yet included in the MST.
+         * @param key Array of key values.
+         * @param mstSet Array indicating whether a vertex is included in the MST.
+         * @param numTasks Number of tasks.
+         * @return Returns the index of the vertex with the minimum key value.
+         */
+        private int MinKey(int[] key, bool[] mstSet, int numTasks)
+        {
+            int min = int.MaxValue, minIndex = -1;
+            for (int v = 0; v < numTasks; v++)
+                if (!mstSet[v] && key[v] < min)
+                {
+                    min = key[v];
+                    minIndex = v;
+                }
+            return minIndex;
+        }
+        /**
+         * @brief Prints the Minimum Spanning Tree (MST).
+         * @param parent Array storing the constructed MST.
+         * @param numTasks Number of tasks.
+         * @param tasks List of tasks.
+         * @param key Array of key values.
+         * @return Returns true after printing the MST.
+         */
+        private bool PrintMST(int[] parent, int numTasks, List<Task> tasks, int[] key)
+        {
+            Console.WriteLine("Edges in the MST:");
+            for (int i = 1; i < numTasks; i++)
+                if (parent[i] != -1) // Parent of the root node is -1
+                    Console.WriteLine($"{tasks[parent[i]].TaskName} - {tasks[i].TaskName}, Cost: {key[i]}");
+            EnterToContinue();
+            return true;
+        }
+        /**
+         * @brief Prints the Minimum Spanning Tree (MST).
+         * @param parent Array storing the constructed MST.
+         * @param numTasks Number of tasks.
+         * @param tasks List of tasks.
+         * @param key Array of key values.
+         * @return Returns true after printing the MST.
+         */
+        //Ford Fulker Algorithm
+        public void OptimizeBudget(string pathFileTasks)
+        {
+            ClearScreen();
+            List<Task> tasks = LoadOwnedTasks(pathFileTasks);
+            Console.Write("Please enter your budget: ");
+            double budget = Convert.ToDouble(Console.ReadLine());
+
+            List<Edge> edges = new List<Edge>();
+            int source = 0, sink = tasks.Count + 1;
+            int[] parent = new int[sink + 1];
+            bool[] visited = new bool[sink + 1];
+            int[] level = new int[sink + 1]; // For Dinic's algorithm
+
+            //Ask user to which algorithm will be used. Ford-Fulkerson or Edmonds-Karp
+            string algorithm;
+            InitializeGraph(tasks, edges, source, sink);
+            double maxFlow;
+            while (true)
+            {
+                ClearScreen();
+                Console.WriteLine("Choose an algorithm to optimize budget:");
+                Console.WriteLine("1. Ford-Fulkerson");
+                Console.WriteLine("2. Edmonds-Karp");
+                Console.WriteLine("3. Dinic's Algorithm");
+                Console.Write("Please enter a number to select: ");
+                algorithm = Console.ReadLine();
+
+                if (algorithm == "1")
+                {
+                    maxFlow = FordFulkerson(edges, parent, visited, source, sink);
+                    break;
+                }
+                else if (algorithm == "2")
+                {
+                    maxFlow = EdmondsKarp(edges, parent, visited, source, sink);
+                    break;
+                }
+                else if (algorithm == "3")
+                {
+                    maxFlow = DinicsAlgorithm(tasks, edges, level, parent, source, sink);
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid choice. Please try again.");
+                    EnterToContinue();
+                }
+            }
+
+
+            if (maxFlow <= budget)
+                Console.WriteLine($"Budget is sufficient. Maximum flow is {maxFlow}.");
+            else
+                Console.WriteLine($"Budget is insufficient. Maximum flow is {maxFlow}.");
+            EnterToContinue();
+        }
+
+
+        /**
+ * @brief Displays the deadline setting menu and processes user input for setting deadlines.
+ * @param pathFileTasks Path to the file containing task data.
+ * @return Returns true if the deadline setting process is completed, false otherwise.
+ */
+        public bool DeadlineSettingMenu(string pathFileTasks)
+        {
+            int choice;
+
+            while (true)
+            {
+                ClearScreen();
+                PrintDeadlineSettingMenu();
+
+                if (!int.TryParse(Console.ReadLine(), out choice))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        SetDeadlineForTaskMenu(pathFileTasks);
+                        break;
+
+                    case 2:
+                        return false;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        EnterToContinue();
+                        break;
+                }
+            }
+        }
+        /**
+         * @brief Displays the menu for setting a deadline for a specific task and processes user input.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if the deadline is set successfully, false otherwise.
+         */
+        public bool SetDeadlineForTaskMenu(string pathFileTasks)
+        {
+            Task selectedTask = null;
+            List<Task> ownedTasks = LoadOwnedTasks(pathFileTasks);
+
+            do
+            {
+                ClearScreen();
+                Console.WriteLine("Set Deadline for a Task \n");
+
+                if (ownedTasks.Count == 0)
+                {
+                    Console.WriteLine("No tasks found.");
+                    EnterToContinue();
+                    return false;
+                }
+
+                PrintOwnedTasksToConsole(pathFileTasks);
+
+                Console.Write("Select a task to set deadline. You can choose tasks that do not have a due date. (Type \"exit\" to exit): ");
+                int taskIndex;
+                string taskIndexString = Console.ReadLine();
+
+                if (taskIndexString.ToLower() == "exit")
+                {
+                    return false;
+                }
+
+                if (!int.TryParse(taskIndexString, out taskIndex))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                //Check if the task index is valid
+                if (taskIndex < 0)
+                {
+                    Console.WriteLine("Invalid task index. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+
+                //Check user has the task
+                foreach (Task task in ownedTasks)
+                {
+                    if (task.Id == taskIndex && (task.Deadline == null || task.Deadline.Length == 0))
+                    {
+                        selectedTask = task;
+                        break;
+                    }
+                }
+
+                if (selectedTask == null)
+                {
+                    Console.WriteLine("You do not have the task with the given index. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+                break;
+
+            } while (true);
+            //Ask the user to enter the deadline for the selected task. It must be step by step. First, ask the user day , then month, and finally year. Every question have do while 
+
+            int day;
+            int month;
+            int year;
+            do
+            {
+                //Day
+                Console.Write("Enter the day of the deadline: ");
+                string dayString = Console.ReadLine();
+                if (!int.TryParse(dayString, out day))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                if (day < 1 || day > 31)
+                {
+                    Console.WriteLine("Invalid day. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+
+                break;
+            } while (day < 1 || day > 31);
+
+            do
+            {
+                //Month
+                Console.Write("Enter the month of the deadline: ");
+                string monthString = Console.ReadLine();
+                if (!int.TryParse(monthString, out month))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                if (month < 1 || month > 12)
+                {
+                    Console.WriteLine("Invalid month. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+
+                break;
+            } while (month < 1 || month > 12);
+
+            do
+            {
+                //Year
+                Console.Write("Enter the year of the deadline: ");
+                string yearString = Console.ReadLine();
+                if (!int.TryParse(yearString, out year))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                //İf the year is less than the current year, give an error message
+                if (year < DateTime.Now.Year)
+                {
+                    Console.WriteLine("Invalid year. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+
+                break;
+            } while (year < DateTime.Now.Year);
+
+            return SetDeadlineForTask(selectedTask, $"{day}/{month}/{year}", pathFileTasks);
+
+        }
+        /**
+         * @brief Sets a deadline for a specific task and updates the task data file.
+         * @param task The task for which the deadline is being set.
+         * @param date The deadline date in string format.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if the deadline is set successfully, false otherwise.
+         */
+        public bool SetDeadlineForTask(Task task, string date, string pathFileTasks)
+        {
+            List<Task> tasks = LoadAllTasks(pathFileTasks);
+
+            foreach (Task taskItem in tasks)
+            {
+                if (taskItem.Id == task.Id)
+                {
+                    taskItem.Deadline = date;
+                    break;
+                }
+            }
+
+            string updatedJsonString = JsonSerializer.Serialize(tasks);
+            File.WriteAllText(pathFileTasks, updatedJsonString);
+
+            Console.WriteLine("Deadline set successfully.");
+            EnterToContinue();
+            return true;
+        }
+        /**
+         * @brief Displays the menu for setting reminders for tasks and processes user input.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if the reminder setting process is completed, false otherwise.
+         */
+
+
+
