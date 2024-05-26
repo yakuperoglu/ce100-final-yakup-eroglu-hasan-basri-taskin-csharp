@@ -72,7 +72,6 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.Equal(0, result);
         }
-
         [Fact]
         public void GuestMenu_ShouldEnterEveryCaseAndExit()
         {
@@ -176,7 +175,6 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.True(result);
         }
-
         [Fact]
         public void CategorizeTaskMenu_NoOwnedTasks_ShouldReturnFalse()
         {
@@ -264,7 +262,6 @@ namespace TaskschedulerLibrary.Tests
 
             Assert.True(result);
         }
-
         [Fact]
         public void FindSimilarUsersByTaskCategoryMenu_InvalidInputs_ShouldReturnTrue()
         {
@@ -379,7 +376,6 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.False(result);
         }
-
         [Fact]
         public void DeadlineSettingMenu_SetDeadline_DoesntHaveEnoughTask_ShouldReturnFalse()
         {
@@ -447,7 +443,6 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.True(result);
         }
-
         [Fact]
         public void SetRemindersMenu_DoesntHaveEnoughTasks_ShouldReturnFalse()
         {
@@ -543,7 +538,6 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.True(result);
         }
-
         [Fact]
         public void SetReminders_CaseThree_ShouldReturnFalse()
         {
@@ -722,6 +716,241 @@ namespace TaskschedulerLibrary.Tests
 
             // Assert
             Assert.Equal(result.Count, 0);
+        }
+        [Fact]
+        public void FindSimilarUsersByTaskCategoryDFS_NoStartTaskId_ShouldReturnEmptyArray()
+        {
+            // Arrange
+            SetStartup();
+            Dictionary<int, Task> taskDictionary = new Dictionary<int, Task>();
+            Dictionary<int, User> dictionary = new Dictionary<int, User>();
+
+            var result = taskScheduler.FindSimilarUsersByTaskCategoryDFS(taskDictionary, dictionary, 123);
+
+
+            // Assert
+            Assert.Equal(result.Count, 0);
+        }
+
+
+        [Fact]
+        public void AllocateResourcesBasedOnBudgetAndDeadline_ShouldEnterEveryCase()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("Invalid\n64\n");
+            Console.SetIn(input);
+            taskScheduler.AllocateResourcesBasedOnBudgetAndDeadline(testFilePathTasks);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        private void CreateTestUsers()
+        {
+            //Users
+            var testUsers = new List<User>
+            {
+                new User { Id = 1, Email = "test1", Password = "test1" },
+                new User { Id = 2, Email = "test2", Password = "test2" },
+                new User { Id = 3, Email = "test3", Password = "test3" },
+                new User { Id = 4, Email = "test4", Password = "test4" },
+            };
+
+            // Create a test file with users
+            using (BinaryWriter writer = new BinaryWriter(File.Open(testFilePathUsers, FileMode.Create)))
+            {
+                foreach (var user in testUsers)
+                {
+                    writer.Write(user.Id);
+                    writer.Write(user.Email);
+                    writer.Write(user.Password);
+                }
+            }
+        }
+        private void CreateTestCategories()
+        {
+            var categories = new List<Category>
+            {
+                new Category { Id = 1, CategoryName = "Work" },
+                new Category { Id = 2, CategoryName = "Personal" },
+                new Category { Id = 3, CategoryName = "Shopping" },
+                new Category { Id = 4, CategoryName = "Study" },
+                new Category { Id = 5, CategoryName = "Health" },
+                new Category { Id = 6, CategoryName = "Sport" },
+                new Category { Id = 7, CategoryName = "Diet" }
+            };
+
+            // Create a test file with categories
+            using (BinaryWriter writer = new BinaryWriter(File.Open(testFilePathCategories, FileMode.Create)))
+            {
+                foreach (var category in categories)
+                {
+                    writer.Write(category.Id);
+                    writer.Write(category.CategoryName);
+                }
+            }
+        }
+        private void CreateTestTasks()
+        {
+            //Load users
+            var users = new List<User>();
+            using (BinaryReader reader = new BinaryReader(File.Open(testFilePathUsers, FileMode.Open)))
+            {
+                while (reader.BaseStream.Position != reader.BaseStream.Length)
+                {
+                    var user = new User
+                    {
+                        Id = reader.ReadInt32(),
+                        Email = reader.ReadString(),
+                        Password = reader.ReadString(),
+                    };
+                    users.Add(user);
+                }
+            }
+
+            //Load Categories
+            var categories = new List<Category>();
+            using (BinaryReader reader = new BinaryReader(File.Open(testFilePathCategories, FileMode.Open)))
+            {
+                while (reader.BaseStream.Position != reader.BaseStream.Length)
+                {
+                    var category = new Category
+                    {
+                        Id = reader.ReadInt32(),
+                        CategoryName = reader.ReadString(),
+                    };
+                    categories.Add(category);
+                }
+            }
+
+            //Tasks
+            var tasks = new List<Task>
+            {
+                new Task
+                {
+                    Id = 1, TaskName = "Task1", TaskDescription = "TaskDescription1", Category = categories[0],
+                    Owner = users[0], Deadline = DateTime.Now.AddDays(1).ToString(), Priority = 1, Cost = 5555
+                },
+                new Task
+                {
+                    Id = 2, TaskName = "Task2", TaskDescription = "TaskDescription2", Category = categories[1],
+                    Owner = users[1], Deadline = DateTime.Now.AddDays(2).ToString(), Priority = 3, Cost = 12
+                },
+                new Task
+                {
+                    Id = 3, TaskName = "Task3", TaskDescription = "TaskDescription3", Category = categories[2],
+                    Owner = users[2], Deadline = DateTime.Now.AddDays(3).ToString(), Priority = 2 ,Cost = 123
+                },
+                new Task
+                {
+                    Id = 4, TaskName = "Task4", TaskDescription = "TaskDescription4", Category = categories[3],
+                    Owner = users[3], Deadline = DateTime.Now.AddDays(4).ToString(), Priority = 5,Cost = 11
+                },
+                new Task
+                {
+                    Id = 5, TaskName = "Task5", TaskDescription = "TaskDescription5", Category = categories[4],
+                    Owner = users[0], Deadline = DateTime.Now.AddDays(5).ToString(), Priority = 1,Cost = 12
+                },
+                new Task
+                {
+                    Id = 6, TaskName = "Task6", TaskDescription = "TaskDescription6", Category = categories[5],
+                    Owner = users[1], Deadline = DateTime.Now.AddDays(6).ToString(), Priority = 1,Cost = 12
+                },
+                new Task
+                {
+                    Id = 7, TaskName = "Task7", TaskDescription = "TaskDescription7", Category = categories[6],
+                    Owner = users[2], Deadline = DateTime.Now.AddDays(7).ToString(), Priority = 4,Cost = 1231
+                },
+                new Task
+                {
+                    Id = 8, TaskName = "Task8", TaskDescription = "TaskDescription8", Category = categories[0],
+                    Owner = users[3], Deadline = DateTime.Now.AddDays(8).ToString(), Priority = 3,Cost = 41
+                },
+                new Task
+                {
+                    Id = 9, TaskName = "Task9", TaskDescription = "TaskDescription9", Category = categories[1],
+                    Owner = users[0], Deadline = DateTime.Now.AddDays(9).ToString(), Priority = 2,Cost = 61
+                },
+                new Task
+                {
+                    Id = 10, TaskName = "Task10", TaskDescription = "TaskDescription10", Category = categories[2],
+                    Owner = users[1], Deadline = DateTime.Now.AddDays(10).ToString(), Priority = 1,Cost = 12
+                },
+                new Task
+                {
+                    Id = 11, TaskName = "Task11", TaskDescription = "TaskDescription11", Category = null,
+                    Owner = users[0], Deadline = DateTime.Now.AddDays(10).ToString(), Priority = 1 ,Cost = 1231
+                },
+                new Task
+                {
+                    Id = 12, TaskName = "Task12", TaskDescription = "TaskDescription12", Category = null,
+                    Owner = users[0], Deadline = null, Priority = 1 ,Cost = 1231
+                },
+            };
+            ;
+            // Create a test file with tasks
+            string jsonStringUpdated = JsonSerializer.Serialize(tasks);
+            File.WriteAllText(testFilePathTasks, jsonStringUpdated);
+
+
+        }
+        private void CreateTestData()
+        {
+            CreateTestUsers();
+            CreateTestCategories();
+            CreateTestTasks();
+        }
+        private void CleanupTestDataUser()
+        {
+            if (File.Exists(testFilePathUsers))
+            {
+                File.Delete(testFilePathUsers);
+            }
+        }
+        private void CleanupTestDataTasks()
+        {
+            if (File.Exists(testFilePathTasks))
+            {
+                File.Delete(testFilePathTasks);
+            }
+        }
+        private void CleanupTestDataCategories()
+        {
+            if (File.Exists(testFilePathCategories))
+            {
+                File.Delete(testFilePathCategories);
+            }
+        }
+        private void CleanupTestData()
+        {
+            CleanupTestDataUser();
+            CleanupTestDataTasks();
+            CleanupTestDataCategories();
+        }
+        private void SetStartup()
+        {
+            CleanupTestData();
+            taskScheduler = new Taskscheduler();
+            taskScheduler.IsTestMode = true;
+            taskScheduler.LoggedInUser = new User
+            { Id = 1, Email = "test1", Password = "test1" };
         }
     }
 }
