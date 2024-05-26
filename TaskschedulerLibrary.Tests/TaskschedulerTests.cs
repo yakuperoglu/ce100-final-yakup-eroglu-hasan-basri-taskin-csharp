@@ -72,7 +72,6 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.Equal(0, result);
         }
-
         [Fact]
         public void GuestMenu_ShouldEnterEveryCaseAndExit()
         {
@@ -176,7 +175,6 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.True(result);
         }
-
         [Fact]
         public void CategorizeTaskMenu_NoOwnedTasks_ShouldReturnFalse()
         {
@@ -264,7 +262,6 @@ namespace TaskschedulerLibrary.Tests
 
             Assert.True(result);
         }
-
         [Fact]
         public void FindSimilarUsersByTaskCategoryMenu_InvalidInputs_ShouldReturnTrue()
         {
@@ -379,7 +376,6 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.False(result);
         }
-
         [Fact]
         public void DeadlineSettingMenu_SetDeadline_DoesntHaveEnoughTask_ShouldReturnFalse()
         {
@@ -447,7 +443,6 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.True(result);
         }
-
         [Fact]
         public void SetRemindersMenu_DoesntHaveEnoughTasks_ShouldReturnFalse()
         {
@@ -543,7 +538,6 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.True(result);
         }
-
         [Fact]
         public void SetReminders_CaseThree_ShouldReturnFalse()
         {
@@ -723,7 +717,6 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.Equal(result.Count, 0);
         }
-
         [Fact]
         public void FindSimilarUsersByTaskCategoryDFS_NoStartTaskId_ShouldReturnEmptyArray()
         {
