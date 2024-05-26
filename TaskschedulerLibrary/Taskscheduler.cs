@@ -1799,6 +1799,168 @@ namespace TaskschedulerLibrary
             return categories;
         }
 
+        /**
+       * @brief Gets a new task ID by incrementing the highest existing task ID.
+       * @param pathFileTasks Path to the file containing task data.
+       * @return Returns a new task ID.
+       */
+        public int GetNewTaskId(string pathFileTasks)
+        {
+            List<Task> tasks = LoadAllTasks(pathFileTasks);
+            if (tasks.Count == 0)
+            {
+                return 1;
+            }
+            return tasks[tasks.Count - 1].Id + 1;
+        }
+        /**
+         * @brief Gets a new user ID by incrementing the highest existing user ID.
+         * @param pathFileUsers Path to the file containing user data.
+         * @return Returns a new user ID.
+         */
+        public int GetNewUserId(string pathFileUsers)
+        {
+            List<User> users = LoadAllUsers(pathFileUsers);
+            if (users.Count == 0)
+            {
+                return 1;
+            }
+            return users[users.Count - 1].Id + 1;
+        }
+
+
+        /**
+         * @brief Prints the set reminders menu to the console.
+         * @return Returns true after printing the menu.
+         */
+        public bool PrintSetRemindersMenu()
+        {
+            Console.WriteLine("Set Reminders\n\n");
+            Console.WriteLine("1. 3 seconds");
+            Console.WriteLine("2. 5 seconds");
+            Console.WriteLine("3. 15 seconds");
+            Console.WriteLine("4. Return to Reminder System Menu");
+            Console.Write("Please enter a number to select: ");
+            return true;
+        }
+        /**
+         * @brief Prints the main menu to the console.
+         * @return Returns true after printing the menu.
+         */
+        public bool PrintMainMenu()
+        {
+            Console.WriteLine("Welcome To Personal Library System\n\n");
+            Console.WriteLine("1. Login");
+            Console.WriteLine("2. Register");
+            Console.WriteLine("3. Guest Mode");
+            Console.WriteLine("4. Exit Program");
+            Console.Write("Please enter a number to select: ");
+            return true;
+        }
+        /**
+         * @brief Prints the task prioritization menu to the console.
+         * @return Returns true after printing the menu.
+         */
+        public bool PrintTaskPrioritizationMenu()
+        {
+            ClearScreen();
+            Console.WriteLine("Task Prioritization Menu\n\n");
+            Console.WriteLine("1. Prioritize Tasks");
+            Console.WriteLine("2. Return to User Operations Menu");
+            Console.Write("Please enter a number to select: ");
+            return true;
+        }
+        /**
+         * @brief Prints the reminder settings menu to the console.
+         * @return Returns true after printing the menu.
+         */
+        public bool PrintReminderSettingsMenu()
+        {
+            ClearScreen();
+            Console.WriteLine("Reminder Settings Menu\n\n");
+            Console.WriteLine("1. Email");
+            Console.WriteLine("2. SMS");
+            Console.WriteLine("3. In-App Notification");
+            Console.WriteLine("4. Return to Reminder System Menu");
+            Console.Write("Please enter a number to select: ");
+            return true;
+        }
+        /**
+         * @brief Prints the deadline setting menu to the console.
+         * @return Returns true after printing the menu.
+         */
+        public bool PrintDeadlineSettingMenu()
+        {
+            ClearScreen();
+            Console.WriteLine("Deadline Setting Menu\n\n");
+            Console.WriteLine("1. Set Deadline for a Task");
+            Console.WriteLine("2. Return to User Operations Menu");
+            Console.Write("Please enter a number to select: ");
+            return true;
+        }
+        /**
+         * @brief Prints the task menu to the console.
+         * @return Returns true after printing the menu.
+         */
+        public bool PrintTaskMenu()
+        {
+            ClearScreen();
+            Console.WriteLine("Task  Menu\n\n");
+            Console.WriteLine("1. Create a Task");
+            Console.WriteLine("2. Categorize Task");
+            Console.WriteLine("3. Similar Tasks");
+            Console.WriteLine("4. Find Users add tasks like you");
+            Console.WriteLine("5. The shortest path between Tasks");
+            Console.WriteLine("6. Optimize Budget");
+            Console.WriteLine("7 Shortest Path Between Tasks");
+            Console.WriteLine("8. Return to User Operations Menu");
+            Console.Write("Please enter a number to select: ");
+            return true;
+        }
+        /**
+         * @brief Prints the user menu to the console.
+         * @return Returns true after printing the menu.
+         */
+        public bool PrintUserMenu()
+        {
+            ClearScreen();
+            Console.WriteLine("Welcome to User Operations\n\n");
+            Console.WriteLine("1. Task Creation");
+            Console.WriteLine("2. Deadline Setting");
+            Console.WriteLine("3. Reminder System");
+            Console.WriteLine("4. Task Prioritization");
+            Console.WriteLine("5. Return to Main Menu");
+            Console.Write("Please enter a number to select: ");
+            return true;
+        }
+        /**
+         * @brief Prints the guest menu to the console.
+         * @return Returns true after printing the menu.
+         */
+        public bool PrintGuestMenu()
+        {
+            ClearScreen();
+            Console.WriteLine("Guest Operations\n\n");
+            Console.WriteLine("1. View Categories");
+            Console.WriteLine("2. Return to Main Menu");
+            Console.Write("Please enter a number to select: ");
+            return true;
+        }
+        /**
+         * @brief Prints the reminder system menu to the console.
+         * @return Returns true after printing the menu.
+         */
+        public bool PrintReminderSystemMenu()
+        {
+            ClearScreen();
+            Console.WriteLine("Reminder System Menu\n\n");
+            Console.WriteLine("1. Set Reminders");
+            Console.WriteLine("2. Reminder Settings");
+            Console.WriteLine("3. Return to User Operations Menu");
+            Console.Write("Please enter a number to select: ");
+            return true;
+        }
+
 
 
 
