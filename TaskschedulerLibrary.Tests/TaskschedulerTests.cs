@@ -264,5 +264,120 @@ namespace TaskschedulerLibrary.Tests
 
             Assert.True(result);
         }
+
+        [Fact]
+        public void FindSimilarUsersByTaskCategoryMenu_InvalidInputs_ShouldReturnTrue()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+            var input = new StringReader("Invalid\n3\n1\n");
+            Console.SetIn(input);
+            // Act
+            bool result = taskScheduler.FindSimilarUsersByTaskCategoryMenu(testFilePathUsers, testFilePathTasks);
+
+            // Assert
+            Assert.True(result);
+        }
+        [Fact]
+        public void FindSimilarUsersByTaskCategoryMenu_InsufficientUsersOrTasks_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            // Act
+            bool result = taskScheduler.FindSimilarUsersByTaskCategoryMenu(testFilePathUsers, testFilePathTasks);
+
+            // Assert
+            Assert.False(result);
+        }
+        [Fact]
+        public void FindSimilarUsersByTaskCategoryMenu_DFS_ShouldReturnExpectedResults()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("2\n");
+            Console.SetIn(input);
+
+            // Act
+            bool result = taskScheduler.FindSimilarUsersByTaskCategoryMenu(testFilePathUsers, testFilePathTasks);
+
+            Assert.True(result);
+        }
+        [Fact]
+        public void FindSimilarUsersByTaskCategoryMenu_BFS_ShouldReturnExpectedResults()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("1\n");
+            Console.SetIn(input);
+
+            // Act
+            bool result = taskScheduler.FindSimilarUsersByTaskCategoryMenu(testFilePathUsers, testFilePathTasks);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void TheShortestPathBetweenTasks_EnoughTasks_ShouldReturnTrue()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("1\n");
+            Console.SetIn(input);
+
+            // Act
+            bool result = taskScheduler.TheShortestPathBetweenTasks(testFilePathTasks);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void OptimizeBudget_EdmondsKarp_ShouldEnter()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("2\n2\n");
+            Console.SetIn(input);
+
+            // Act
+            taskScheduler.OptimizeBudget(testFilePathTasks);
+        }
+        [Fact]
+        public void OptimizeBudget_DinicsAlgorithm_ShouldEnter()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("4\n4\n3\n");
+            Console.SetIn(input);
+
+            // Act
+            taskScheduler.OptimizeBudget(testFilePathTasks);
+        }
+        [Fact]
+        public void DeadlineSettingMenu_InvalidInputs_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+
+            var input = new StringReader("Invalýd\n9\n2\n");
+            Console.SetIn(input);
+            var output = new StringWriter();
+            Console.SetOut(output);
+
+            bool result = taskScheduler.DeadlineSettingMenu(testFilePathTasks);
+
+            // Assert
+            Assert.False(result);
+        }
     }
 }
