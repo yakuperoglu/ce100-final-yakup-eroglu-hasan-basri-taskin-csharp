@@ -176,5 +176,93 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.True(result);
         }
+
+        [Fact]
+        public void CategorizeTaskMenu_NoOwnedTasks_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+
+            bool result = taskScheduler.CategorizeTaskMenu(testFilePathTasks, testFilePathCategories);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void CategorizeTaskMenu_InvalidInputAndTypeExit_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+            var input = new StringReader("Invalid\n-1\nexit\n");
+            Console.SetIn(input);
+
+            // Act
+            bool result = taskScheduler.CategorizeTaskMenu(testFilePathTasks, testFilePathCategories);
+
+            Assert.False(result);
+        }
+        [Fact]
+        public void CategorizeTaskMenu_HighSelectedTaskIndex_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("1111\nexit\n");
+            Console.SetIn(input);
+
+            // Act
+            bool result = taskScheduler.CategorizeTaskMenu(testFilePathTasks, testFilePathCategories);
+
+            Assert.False(result);
+        }
+        [Fact]
+        public void CategorizeTaskMenu_CategorySectionInvalidInputs_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("11\nInvalid\n-1\nexit\n");
+            Console.SetIn(input);
+
+            // Act
+            bool result = taskScheduler.CategorizeTaskMenu(testFilePathTasks, testFilePathCategories);
+
+            Assert.False(result);
+        }
+        [Fact]
+        public void CategorizeTaskMenu_HighSelectedCategoryIndex_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("11\n823\nexit\n");
+            Console.SetIn(input);
+
+            // Act
+            bool result = taskScheduler.CategorizeTaskMenu(testFilePathTasks, testFilePathCategories);
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void FindSimilarTasksMenu_HighSelectedCategoryIndex_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("11\n823\nexit\n");
+            Console.SetIn(input);
+
+            // Act
+            bool result = taskScheduler.FindSimilarTasksMenu(testFilePathTasks);
+
+            Assert.True(result);
+        }
     }
 }
