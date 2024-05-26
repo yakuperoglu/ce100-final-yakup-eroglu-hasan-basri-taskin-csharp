@@ -1961,6 +1961,209 @@ namespace TaskschedulerLibrary
             return true;
         }
 
+        //Algorithms 
+        //LCS
+        // Method to find the longest common subsequence of two strings.
+        /**
+ * @brief Calculates the longest common subsequence (LCS) of two strings.
+ * @param firstString The first string.
+ * @param secondString The second string.
+ * @return The length of the LCS.
+ */
+        private int CalculateLongestCommonSubsequence(string firstString, string secondString)
+        {
+            int[,] table = new int[firstString.Length + 1, secondString.Length + 1];
+
+            // Fill the table for LCS calculation
+            for (int i = 0; i <= firstString.Length; i++)
+            {
+                for (int j = 0; j <= secondString.Length; j++)
+                {
+                    if (i == 0 || j == 0)
+                        table[i, j] = 0;
+                    else if (firstString[i - 1] == secondString[j - 1])
+                        table[i, j] = table[i - 1, j - 1] + 1;
+                    else
+                        table[i, j] = Math.Max(table[i - 1, j], table[i, j - 1]);
+                }
+            }
+
+            return table[firstString.Length, secondString.Length];
+        }
+
+        // BFS
+        /**
+         * @brief Finds similar users by task category using BFS.
+         * @param tasks Dictionary of tasks indexed by task ID.
+         * @param users Dictionary of users indexed by user ID.
+         * @param startTaskId The ID of the starting task.
+         * @return A list of similar users.
+         */
+        public List<User> FindSimilarUsersByTaskCategoryBFS(Dictionary<int, Task> tasks, Dictionary<int, User> users, int startTaskId)
+        {
+            if (!tasks.ContainsKey(startTaskId))
+            {
+                Console.WriteLine("Task not found.");
+                return new List<User>();
+            }
+
+            var startTask = tasks[startTaskId];
+            var startCategory = startTask.Category;
+
+            Queue<int> queue = new Queue<int>();
+            HashSet<int> visited = new HashSet<int>();
+            List<User> similarUsers = new List<User>();
+
+            queue.Enqueue(startTaskId);
+            visited.Add(startTaskId);
+
+            while (queue.Count > 0)
+            {
+                int currentTaskId = queue.Dequeue();
+                Task currentTask = tasks[currentTaskId];
+
+                // Eğer bu görevi ekleyen kullanıcı daha önce listeye eklenmediyse, listeye ekle
+                if (!similarUsers.Any(u => u.Id == currentTask.Owner.Id))
+                {
+                    similarUsers.Add(users[currentTask.Owner.Id]);
+                }
+
+                foreach (var taskPair in tasks)
+                {
+                    int taskId = taskPair.Key;
+                    Task task = taskPair.Value;
+
+                    if (!visited.Contains(taskId) && task.Category?.Id == startCategory?.Id)
+                    {
+                        visited.Add(taskId);
+                        queue.Enqueue(taskId);
+                    }
+                }
+            }
+
+            return similarUsers;
+        }
+        //DFS
+        /**
+         * @brief Finds similar users by task category using DFS.
+         * @param tasks Dictionary of tasks indexed by task ID.
+         * @param users Dictionary of users indexed by user ID.
+         * @param startTaskId The ID of the starting task.
+         * @return A list of similar users.
+         */
+        public List<User> FindSimilarUsersByTaskCategoryDFS(Dictionary<int, Task> tasks, Dictionary<int, User> users, int startTaskId)
+        {
+            if (!tasks.ContainsKey(startTaskId))
+            {
+                Console.WriteLine("Task not found.");
+                return new List<User>();
+            }
+
+            var startTask = tasks[startTaskId];
+            var startCategory = startTask.Category;
+
+            Stack<int> stack = new Stack<int>();
+            HashSet<int> visited = new HashSet<int>();
+            List<User> similarUsers = new List<User>();
+
+            stack.Push(startTaskId);
+            visited.Add(startTaskId);
+
+            while (stack.Count > 0)
+            {
+                int currentTaskId = stack.Pop();
+                Task currentTask = tasks[currentTaskId];
+
+                // Eğer bu görevi ekleyen kullanıcı daha önce listeye eklenmediyse, listeye ekle
+                if (!similarUsers.Any(u => u.Id == currentTask.Owner.Id))
+                {
+                    similarUsers.Add(users[currentTask.Owner.Id]);
+                }
+
+                foreach (var taskPair in tasks)
+                {
+                    int taskId = taskPair.Key;
+                    Task task = taskPair.Value;
+
+                    if (!visited.Contains(taskId) && task.Category?.Id == startCategory?.Id)
+                    {
+                        visited.Add(taskId);
+                        stack.Push(taskId);
+                    }
+                }
+            }
+
+            return similarUsers;
+        }
+        //Hufman
+        /**
+         * @brief Saves categories to a file using Huffman encoding.
+         * @param path The file path to save the encoded data.
+         * @param categories The list of categories to encode.
+         */
+        public void SaveCategoriesWithHuffman(string path, List<Category> categories)
+        {
+            string data = string.Join("\n", categories.Select(c => $"{c.Id}:{c.CategoryName}"));
+            var codes = Encode(data);
+            string encoded = string.Join("", data.Select(c => codes[c]));
+            File.WriteAllText(path + ".huff", encoded);
+        }
+        /**
+         * @brief Encodes the given data using Huffman encoding.
+         * @param data The data to encode.
+         * @return A dictionary mapping characters to their Huffman codes.
+         */
+        public Dictionary<char, string> Encode(string data)
+        {
+            var frequencies = data.GroupBy(c => c)
+                .Select(group => new Huffman { Character = group.Key, Frequency = group.Count() })
+                .ToList();
+            while (frequencies.Count > 1)
+            {
+                List<Huffman> orderedNodes = frequencies.OrderBy(node => node.Frequency).ToList();
+                if (orderedNodes.Count >= 2)
+                {
+                    List<Huffman> taken = orderedNodes.Take(2).ToList();
+                    Huffman parent = new Huffman
+                    {
+                        Frequency = taken[0].Frequency + taken[1].Frequency,
+                        Left = taken[0],
+                        Right = taken[1]
+                    };
+                    frequencies.Remove(taken[0]);
+                    frequencies.Remove(taken[1]);
+                    frequencies.Add(parent);
+                }
+            }
+
+            var rootNode = frequencies.FirstOrDefault();
+            var codes = new Dictionary<char, string>();
+            GenerateCodes(rootNode, "", codes);
+            return codes;
+        }
+        /**
+         * @brief Generates Huffman codes for the given node.
+         * @param node The current Huffman node.
+         * @param code The current code.
+         * @param codes The dictionary to store the generated codes.
+         */
+        public void GenerateCodes(Huffman node, string code, Dictionary<char, string> codes)
+        {
+            if (node.Left == null && node.Right == null)
+            {
+                codes.Add(node.Character, code);
+                return;
+            }
+            GenerateCodes(node.Left, code + "0", codes);
+            GenerateCodes(node.Right, code + "1", codes);
+        }
+        /**
+         * @brief Adds an edge to the list of edges for the Ford-Fulkerson algorithm.
+         * @param edges The list of edges.
+         * @param from The source vertex of the edge.
+         * @param to The destination vertex of the edge.
+         * @param capacity The capacity of the edge.
+         */
 
 
 
