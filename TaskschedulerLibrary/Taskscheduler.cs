@@ -1244,12 +1244,12 @@ namespace TaskschedulerLibrary
             EnterToContinue();
             return true;
         }
-
         /**
          * @brief Displays the menu for setting reminders for tasks and processes user input.
          * @param pathFileTasks Path to the file containing task data.
          * @return Returns true if the reminder setting process is completed, false otherwise.
          */
+
         public bool SetRemindersMenu(string pathFileTasks)
         {
             Task selectedTask = null;
@@ -1799,11 +1799,14 @@ namespace TaskschedulerLibrary
             return categories;
         }
 
+
+
+
         /**
-       * @brief Gets a new task ID by incrementing the highest existing task ID.
-       * @param pathFileTasks Path to the file containing task data.
-       * @return Returns a new task ID.
-       */
+         * @brief Gets a new task ID by incrementing the highest existing task ID.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns a new task ID.
+         */
         public int GetNewTaskId(string pathFileTasks)
         {
             List<Task> tasks = LoadAllTasks(pathFileTasks);
@@ -2164,7 +2167,6 @@ namespace TaskschedulerLibrary
          * @param to The destination vertex of the edge.
          * @param capacity The capacity of the edge.
          */
-
 
         //Max-Flow and Min-Cut Ford-Fulkerson Algorithm
         private void AddEdge(List<Edge> edges, int from, int to, double capacity)
@@ -2531,7 +2533,3 @@ namespace TaskschedulerLibrary
         }
     }
 }
-
-
-
-
