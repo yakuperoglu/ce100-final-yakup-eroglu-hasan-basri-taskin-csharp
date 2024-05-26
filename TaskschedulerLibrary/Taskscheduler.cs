@@ -2166,4 +2166,372 @@ namespace TaskschedulerLibrary
          */
 
 
+        //Max-Flow and Min-Cut Ford-Fulkerson Algorithm
+        private void AddEdge(List<Edge> edges, int from, int to, double capacity)
+        {
+            edges.Add(new Edge { From = from, To = to, Capacity = capacity, Flow = 0 });
+            edges.Add(new Edge { From = to, To = from, Capacity = 0, Flow = 0 }); // reverse edge
+        }
+        /**
+         * @brief Finds the maximum flow in a flow network using the Ford-Fulkerson algorithm.
+         * @param edges The list of edges.
+         * @param parent The parent array for BFS.
+         * @param visited The visited array for BFS.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         * @return The maximum flow.
+         */
+        private double FordFulkerson(List<Edge> edges, int[] parent, bool[] visited, int source, int sink)
+        {
+            double maxFlow = 0;
+            while (BFS(edges, parent, visited, source, sink))
+            {
+                double pathFlow = double.MaxValue;
+                for (int v = sink; v != source; v = parent[v])
+                {
+                    int u = parent[v];
+                    Edge edge = edges.Find(e => e.From == u && e.To == v);
+                    pathFlow = Math.Min(pathFlow, edge.Capacity - edge.Flow);
+                }
+
+                for (int v = sink; v != source; v = parent[v])
+                {
+                    int u = parent[v];
+                    Edge edge = edges.Find(e => e.From == u && e.To == v);
+                    edge.Flow += pathFlow;
+                    Edge reverseEdge = edges.Find(e => e.From == v && e.To == u);
+                    reverseEdge.Flow -= pathFlow;
+                }
+
+                maxFlow += pathFlow;
+            }
+            return maxFlow;
+        }
+        /**
+         * @brief Performs BFS for the Ford-Fulkerson algorithm.
+         * @param edges The list of edges.
+         * @param parent The parent array for BFS.
+         * @param visited The visited array for BFS.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         * @return True if there is a path from source to sink, false otherwise.
+         */
+        private bool BFS(List<Edge> edges, int[] parent, bool[] visited, int source, int sink)
+        {
+            Array.Fill(visited, false);
+            Queue<int> queue = new Queue<int>();
+            queue.Enqueue(source);
+            visited[source] = true;
+            parent[source] = -1;
+
+            while (queue.Count > 0)
+            {
+                int u = queue.Dequeue();
+                foreach (Edge edge in edges.Where(e => e.From == u && !visited[e.To] && e.Capacity > e.Flow))
+                {
+                    parent[edge.To] = u;
+                    visited[edge.To] = true;
+                    queue.Enqueue(edge.To);
+                    if (edge.To == sink) return true;
+                }
+            }
+            return false;
+        }
+        /**
+         * @brief Initializes the graph for the max-flow algorithms.
+         * @param tasks The list of tasks.
+         * @param edges The list of edges.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         */
+        private void InitializeGraph(List<Task> tasks, List<Edge> edges, int source, int sink)
+        {
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                AddEdge(edges, source, i + 1, tasks[i].Cost);
+                AddEdge(edges, i + 1, sink, tasks[i].Cost);
+            }
+        }
+        /**
+         * @brief Finds the maximum flow in a flow network using the Edmonds-Karp algorithm.
+         * @param edges The list of edges.
+         * @param parent The parent array for BFS.
+         * @param visited The visited array for BFS.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         * @return The maximum flow.
+         */
+        //Edmonds-Karp Algorithm
+        private double EdmondsKarp(List<Edge> edges, int[] parent, bool[] visited, int source, int sink)
+        {
+            double maxFlow = 0;
+            while (BFS(edges, parent, visited, source, sink))
+            {
+                double pathFlow = double.MaxValue;
+                for (int v = sink; v != source; v = parent[v])
+                {
+                    int u = parent[v];
+                    Edge edge = edges.FirstOrDefault(e => e.From == u && e.To == v);
+                    if (edge != null)
+                    {
+                        pathFlow = Math.Min(pathFlow, edge.Capacity - edge.Flow);
+                    }
+                }
+
+                for (int v = sink; v != source; v = parent[v])
+                {
+                    int u = parent[v];
+                    Edge edge = edges.FirstOrDefault(e => e.From == u && e.To == v);
+                    Edge reverseEdge = edges.FirstOrDefault(e => e.From == v && e.To == u);
+                    if (edge != null && reverseEdge != null)
+                    {
+                        edge.Flow += pathFlow;
+                        reverseEdge.Flow -= pathFlow;
+                    }
+                }
+
+                maxFlow += pathFlow;
+            }
+            return maxFlow;
+        }
+        /**
+         * @brief Finds the maximum flow in a flow network using Dinic's algorithm.
+         * @param tasks The list of tasks.
+         * @param edges The list of edges.
+         * @param level The level array for the level graph.
+         * @param parent The parent array for BFS.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         * @return The maximum flow.
+         */
+        //Dinic's Algorithm
+        private double DinicsAlgorithm(List<Task> tasks, List<Edge> edges, int[] level, int[] parent, int source, int sink)
+        {
+            // Implement Dinic's algorithm using level graph and blocking flow
+            double maxFlow = 0;
+            while (BuildLevelGraph(edges, level, source, sink))
+            {
+                int flow;
+                do
+                {
+                    flow = SendFlow(source, int.MaxValue, sink, edges, parent, level);
+                    maxFlow += flow;
+                } while (flow > 0);
+            }
+            return maxFlow;
+        }
+        /**
+         * @brief Builds the level graph for Dinic's algorithm.
+         * @param edges The list of edges.
+         * @param level The level array for the level graph.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         * @return True if there is a level graph from source to sink, false otherwise.
+         */
+
+        private bool BuildLevelGraph(List<Edge> edges, int[] level, int source, int sink)
+        {
+            Array.Fill(level, -1);
+            Queue<int> queue = new Queue<int>();
+            queue.Enqueue(source);
+            level[source] = 0;
+
+            while (queue.Count > 0)
+            {
+                int u = queue.Dequeue();
+                foreach (var edge in edges.Where(e => e.From == u && e.Capacity > e.Flow && level[e.To] < 0))
+                {
+                    level[edge.To] = level[u] + 1;
+                    queue.Enqueue(edge.To);
+                    if (edge.To == sink)
+                        return true;
+                }
+            }
+            return false;
+        }
+        /**
+         * @brief Sends flow in the level graph for Dinic's algorithm.
+         * @param u The current vertex.
+         * @param flow The current flow.
+         * @param sink The sink vertex.
+         * @param edges The list of edges.
+         * @param parent The parent array for BFS.
+         * @param level The level array for the level graph.
+         * @return The amount of flow sent.
+         */
+
+        private int SendFlow(int u, int flow, int sink, List<Edge> edges, int[] parent, int[] level)
+        {
+            if (u == sink)
+                return flow;
+
+            foreach (var edge in edges.Where(e => e.From == u && level[e.To] == level[u] + 1 && e.Capacity > e.Flow))
+            {
+                int curr_flow = Math.Min(flow, (int)(edge.Capacity - edge.Flow));
+                int temp_flow = SendFlow(edge.To, curr_flow, sink, edges, parent, level);
+
+                if (temp_flow > 0)
+                {
+                    edge.Flow += temp_flow;
+                    Edge reverseEdge = edges.FirstOrDefault(e => e.From == edge.To && e.To == edge.From);
+                    if (reverseEdge != null) reverseEdge.Flow -= temp_flow;
+                    return temp_flow;
+                }
+            }
+            return 0;
+        }
+        /**
+         * @brief Allocates resources based on budget and deadline using Dijkstra's algorithm.
+         * @param pathFileTasks Path to the file containing task data.
+         */
+        //SSSP 
+
+        public void AllocateResourcesBasedOnBudgetAndDeadline(string pathFileTasks)
+        {
+            ClearScreen();
+
+            // Load tasks owned by the user
+            List<Task> tasks = LoadOwnedTasks(pathFileTasks);
+
+            //Get total budget from the user
+            double totalBudget;
+            do
+            {
+                Console.Write("Enter the total budget: ");
+                string totalBudgetString = Console.ReadLine();
+                if (!double.TryParse(totalBudgetString, out totalBudget))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+                break;
+            } while (true);
+
+            // Sort tasks by deadline
+            var sortedTasks = tasks.Where(t => (t.Deadline != null && t.Deadline.Length > 0)).OrderBy(t => DateTime.Parse(t.Deadline)).ToList();
+
+            if (sortedTasks.Count == 0)
+            {
+                Console.WriteLine("No tasks found.");
+                EnterToContinue();
+                return;
+            }
+            // Initialize graph
+            int n = sortedTasks.Count;
+            int source = 0;  // Source node
+            List<int>[] graph = new List<int>[n + 1];
+            for (int i = 0; i <= n; i++) graph[i] = new List<int>();
+
+            // Create dependencies and edges
+            for (int i = 0; i < n; i++)
+            {
+                // Example: Assuming all tasks are dependent on each other
+                for (int j = i + 1; j < n; j++)
+                {
+                    graph[i].Add(j);  // Directed edge from i to j
+                }
+            }
+
+            // Run SSSP algorithm (Dijkstra's algorithm)
+            RunDijkstraAlgorithm(graph, source, sortedTasks, totalBudget);
+        }
+        /**
+         * @brief Finds the vertex with the minimum distance value that is not yet included in the shortest path tree.
+         * @param dist The array of distance values.
+         * @param sptSet The array indicating whether a vertex is included in the shortest path tree.
+         * @param n The number of vertices.
+         * @return The index of the vertex with the minimum distance value.
+         */
+        private int MinDistance(double[] dist, bool[] sptSet, int n)
+        {
+            // Initialize min value
+            double min = double.MaxValue;
+            int minIndex = -1;
+
+            for (int v = 0; v < n; v++)
+            {
+                if (!sptSet[v] && dist[v] <= min)
+                {
+                    min = dist[v];
+                    minIndex = v;
+                }
+            }
+
+            return minIndex;
+        }
+        /**
+         * @brief Prints the solution of the shortest path algorithm.
+         * @param dist The array of distance values.
+         * @param n The number of vertices.
+         * @param totalBudget The total budget.
+         * @param tasks The list of tasks.
+         */
+
+        private void PrintSolution(double[] dist, int n, double totalBudget, List<Task> tasks)
+        {
+            PrintTasksToConsole(tasks);
+
+            double totalCost = dist.Sum();
+            if (totalCost <= totalBudget)
+            {
+                Console.WriteLine($"Total cost of tasks is within the budget: {totalCost}");
+            }
+            else
+            {
+                Console.WriteLine($"Total cost of tasks exceeds the budget: {totalCost}");
+            }
+        }
+        /**
+         * @brief Runs Dijkstra's algorithm on the given graph to allocate resources based on budget and deadline.
+         * @param graph The adjacency list representation of the graph.
+         * @param source The source vertex.
+         * @param tasks The list of tasks.
+         * @param totalBudget The total budget.
+         */
+
+        private void RunDijkstraAlgorithm(List<int>[] graph, int source, List<Task> tasks, double totalBudget)
+        {
+            int n = tasks.Count;
+            double[] dist = new double[n];
+            bool[] sptSet = new bool[n];  // Shortest path tree set
+
+            // Initialize all distances as INFINITE and sptSet[] as false
+            for (int i = 0; i < n; i++)
+            {
+                dist[i] = double.MaxValue;
+                sptSet[i] = false;
+            }
+
+            // Distance of source vertex from itself is always 0
+            dist[source] = 0;
+
+            // Find shortest path for all vertices
+            for (int count = 0; count < n - 1; count++)
+            {
+                // Pick the minimum distance vertex from the set of vertices not yet processed
+                int u = MinDistance(dist, sptSet, n);
+
+                // Mark the picked vertex as processed
+                sptSet[u] = true;
+
+                // Update dist value of the adjacent vertices of the picked vertex
+                foreach (int v in graph[u])
+                {
+                    if (!sptSet[v] && dist[u] != double.MaxValue && dist[u] + tasks[v].Cost < dist[v])
+                    {
+                        dist[v] = dist[u] + tasks[v].Cost;
+                    }
+                }
+            }
+
+            // Print the calculated shortest distances
+            PrintSolution(dist, n, totalBudget, tasks);
+            EnterToContinue();
+        }
+    }
+}
+
+
+
 
