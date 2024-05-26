@@ -662,5 +662,66 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.False(result);
         }
+
+        [Fact]
+        public void PrioritizeTasks_DoesntExistTask_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("13\nexit\n");
+            Console.SetIn(input);
+            bool result = taskScheduler.PrioritizeTasks(testFilePathTasks);
+
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void PrioritizeTasks_ValidPriority_ShouldReturnTrue()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("1\nInvalid\n6\n4\n");
+            Console.SetIn(input);
+            bool result = taskScheduler.PrioritizeTasks(testFilePathTasks);
+
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void PrintTasksToConsole_NoTasks_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            List<Task> tasks = new List<Task>();
+
+            bool result = taskScheduler.PrintTasksToConsole(tasks);
+
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void FindSimilarUsersByTaskCategoryBFS_NoStartTaskId_ShouldReturnEmptyArray()
+        {
+            // Arrange
+            SetStartup();
+            Dictionary<int, Task> taskDictionary = new Dictionary<int, Task>();
+            Dictionary<int, User> dictionary = new Dictionary<int, User>();
+
+            var result = taskScheduler.FindSimilarUsersByTaskCategoryBFS(taskDictionary, dictionary, 123);
+
+
+            // Assert
+            Assert.Equal(result.Count, 0);
+        }
     }
 }
