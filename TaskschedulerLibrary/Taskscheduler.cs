@@ -237,3 +237,120 @@ namespace TaskschedulerLibrary
                 }
             }
         }
+
+        /**
+ * @brief Displays the login menu and handles user login.
+ * @param pathFileUsers Path to the file containing user data.
+ * @return Returns true if login is successful, false otherwise.
+ */
+        public bool LoginUserMenu(string pathFileUsers)
+        {
+            ClearScreen();
+            User loginUser = new User();
+            Console.Write("Enter email: ");
+            loginUser.Email = Console.ReadLine();
+
+            Console.Write("Enter password: ");
+            loginUser.Password = Console.ReadLine();
+            var totp = new Totp(Encoding.UTF8.GetBytes(loginUser.Password));
+            string computedOtp = (IsTestMode || Bypass) ? "123456" : totp.ComputeTotp();
+            Console.WriteLine("Current OTP: " + computedOtp);
+            Console.Write("Enter OTP: ");
+            string otp = Console.ReadLine();
+            if (otp == computedOtp)
+            {
+                return LoginUser(loginUser, pathFileUsers);
+            }
+            else
+            {
+                Console.WriteLine("Invalid OTP. Please try again.");
+                EnterToContinue();
+                return false;
+            }
+        }
+        /**
+ * @brief Authenticates the user by comparing entered credentials with stored data.
+ * @param user User object containing login credentials.
+ * @param pathFile Path to the file containing user data.
+ * @return Returns true if authentication is successful, false otherwise.
+ */
+        public bool LoginUser(User user, string pathFile)
+        {
+            if (File.Exists(pathFile))
+            {
+                using (BinaryReader reader = new BinaryReader(File.Open(pathFile, FileMode.Open)))
+                {
+                    while (reader.BaseStream.Position < reader.BaseStream.Length)
+                    {
+                        User existingUser = new User
+                        {
+                            Id = reader.ReadInt32(),
+                            Email = reader.ReadString(),
+                            Password = reader.ReadString()
+                        };
+                        string hashString;
+                        using (SHA256 sha256 = SHA256.Create())
+                        {
+                            hashString = sha256.ComputeHash(Encoding.UTF8.GetBytes(user.Password)).ToString();
+                        }
+                        string encryptedBytes = AesEncrypt(hashString, secretKey).ToString();
+
+                        if (existingUser.Email == user.Email && existingUser.Password == encryptedBytes)
+                        {
+                            LoggedInUser = existingUser;
+                            Console.WriteLine("Login successful.");
+                            EnterToContinue();
+                            //UserOperationsMenu'u çağır
+                            return true;
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("Invalid email or password. Please try again.");
+            EnterToContinue();
+            return false;
+        }
+        /**
+ * @brief Displays the registration menu and handles user registration.
+ * @param pathFileUsers Path to the file containing user data.
+ * @return Returns true if registration is successful, false otherwise.
+ */
+        public bool RegisterMenu(string pathFileUsers)
+        {
+            ClearScreen();
+            User newUser = new User();
+            Console.Write("Enter email: ");
+            newUser.Email = Console.ReadLine();
+
+            Console.Write("Enter password: ");
+            newUser.Password = Console.ReadLine();
+            newUser.Id = GetNewUserId(pathFileUsers);
+            return RegisterUser(newUser, pathFileUsers);
+        }
+        /**
+   * @brief Registers a new user by storing their data in the file.
+   * @param user User object containing registration details.
+   * @param pathFileUsers Path to the file containing user data.
+   * @return Returns true if registration is successful, false otherwise.
+   */
+        public bool RegisterUser(User user, string pathFileUsers)
+        {
+            string hashString;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                hashString = sha256.ComputeHash(Encoding.UTF8.GetBytes(user.Password)).ToString();
+            }
+            string encryptedBytes = AesEncrypt(hashString, secretKey).ToString();
+
+            using (BinaryWriter writer = new BinaryWriter(File.Open(pathFileUsers, FileMode.Append)))
+            {
+                writer.Write(user.Id);
+                writer.Write(user.Email);
+                writer.Write(encryptedBytes);
+            }
+
+            Console.WriteLine("User registered successfully.");
+            EnterToContinue();
+            return true;
+        }
+
