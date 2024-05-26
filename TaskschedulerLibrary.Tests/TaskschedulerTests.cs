@@ -543,5 +543,124 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.True(result);
         }
+
+        [Fact]
+        public void SetReminders_CaseThree_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var task = new Task
+            {
+                Id = 1,
+                TaskName = "Task1",
+                TaskDescription = "TaskDescription1",
+                Category = new Category { Id = 1, CategoryName = "Work" },
+                Owner = new User { Id = 1, Email = "test1", Password = "test1" },
+                Deadline = DateTime.Now.AddDays(1).ToString(),
+                Priority = 1,
+                Cost = 5555
+            };
+            var input = new StringReader("3\n");
+            Console.SetIn(input);
+            bool result = taskScheduler.SetReminders(task, testFilePathTasks);
+
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void ReminderSystemMenu_EnterEveryCase_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("Invalid\n4\n2\n4\n1\nexit\n3\n");
+            Console.SetIn(input);
+            bool result = taskScheduler.ReminderSystemMenu(testFilePathTasks);
+
+
+            // Assert
+            Assert.False(result);
+        }
+        [Fact]
+        public void ReminderSettingsMenu_CaseOne_ShouldReturnTrue()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("Invalid\n6\n1\n");
+            Console.SetIn(input);
+            bool result = taskScheduler.ReminderSettingsMenu(testFilePathTasks);
+
+
+            // Assert
+            Assert.True(result);
+        }
+        [Fact]
+        public void ReminderSettingsMenu_CaseTwo_ShouldReturnTrue()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("2\n");
+            Console.SetIn(input);
+            bool result = taskScheduler.ReminderSettingsMenu(testFilePathTasks);
+
+
+            // Assert
+            Assert.True(result);
+        }
+        [Fact]
+        public void ReminderSettingsMenu_CaseThree_ShouldReturnTrue()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("3\n");
+            Console.SetIn(input);
+            bool result = taskScheduler.ReminderSettingsMenu(testFilePathTasks);
+
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void TaskPrioritizationMenu_Invalid_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+
+            var input = new StringReader("Invalid\n4\n1\n2\n");
+            Console.SetIn(input);
+            bool result = taskScheduler.TaskPrioritizationMenu(testFilePathTasks);
+
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void PrioritizeTasks_Invalid_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+
+            var input = new StringReader("Invalid\nexit\n");
+            Console.SetIn(input);
+            bool result = taskScheduler.PrioritizeTasks(testFilePathTasks);
+
+
+            // Assert
+            Assert.False(result);
+        }
     }
 }
