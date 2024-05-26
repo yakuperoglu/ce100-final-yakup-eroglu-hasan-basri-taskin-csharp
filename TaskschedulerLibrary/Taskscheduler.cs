@@ -354,3 +354,394 @@ namespace TaskschedulerLibrary
             return true;
         }
 
+        /**
+ * @brief Encrypts a plain text using AES encryption.
+ * @param password The encryption key.
+ * @param plainText The text to be encrypted.
+ * @return The encrypted byte array.
+ */
+        public byte[] AesEncrypt(string password, string plainText)
+        {
+            byte[] encryptedBytes;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (SharpAESCrypt.SharpAESCrypt aes =
+                       new SharpAESCrypt.SharpAESCrypt(password, ms, SharpAESCrypt.OperationMode.Encrypt))
+                {
+                    using (StreamWriter sw = new StreamWriter(aes))
+                    {
+                        sw.Write(plainText);
+                    }
+                }
+                encryptedBytes = ms.ToArray();
+            }
+            return encryptedBytes;
+        }
+        /**
+ * @brief Handles guest operations by displaying the guest menu and processing user input.
+ * @param pathFileCategories Path to the file containing category data.
+ * @return Returns false to indicate the guest operation is completed.
+ */
+        public bool GuestOperation(string pathFileCategories)
+        {
+            int choice;
+
+            while (true)
+            {
+                PrintGuestMenu();
+
+                if (!int.TryParse(Console.ReadLine(), out choice))
+                {
+                    HandleInputError();
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        ClearScreen();
+                        PrintCategoriesToConsole(pathFileCategories);
+                        EnterToContinue();
+                        break;
+
+                    case 2:
+                        return false;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        EnterToContinue();
+                        break;
+                }
+            }
+        }
+        /**
+ * @brief Handles user operations by displaying the user menu and processing user input.
+ * @param pathFileTasks Path to the file containing task data.
+ * @param pathFileCategories Path to the file containing category data.
+ * @param pathFileUsers Path to the file containing user data.
+ * @return Returns false to indicate the user operation is completed.
+ */
+
+        public bool UserOperationsMenu(string pathFileTasks, string pathFileCategories, string pathFileUsers)
+        {
+            int choice;
+
+            while (true)
+            {
+                ClearScreen();
+                PrintUserMenu();
+
+                if (!int.TryParse(Console.ReadLine(), out choice))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        TaskMenu(pathFileTasks, pathFileCategories, pathFileUsers);
+                        break;
+                    case 2:
+                        DeadlineSettingMenu(pathFileTasks);
+                        break;
+
+                    case 3:
+                        ReminderSystemMenu(pathFileTasks);
+                        break;
+
+                    case 4:
+                        TaskPrioritizationMenu(pathFileTasks);
+                        break;
+                    case 5:
+                        return false;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        EnterToContinue();
+                        break;
+                }
+            }
+        }
+        /**
+ * @brief Handles task-related operations by displaying the task menu and processing user input.
+ * @param pathFileTasks Path to the file containing task data.
+ * @param pathFileCategories Path to the file containing category data.
+ * @param pathFileUsers Path to the file containing user data.
+ * @return Returns false to indicate the task menu operation is completed.
+ */
+
+        public bool TaskMenu(string pathFileTasks, string pathFileCategories, string pathFileUsers)
+        {
+            int choice;
+
+            while (true)
+            {
+                ClearScreen();
+                PrintTaskMenu();
+
+                if (!int.TryParse(Console.ReadLine(), out choice))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        CreateTaskMenu(pathFileTasks);
+                        break;
+
+                    case 2:
+                        CategorizeTaskMenu(pathFileTasks, pathFileCategories);
+                        break;
+
+                    case 3:
+                        FindSimilarTasksMenu(pathFileTasks);
+                        break;
+                    case 4:
+                        FindSimilarUsersByTaskCategoryMenu(pathFileUsers, pathFileTasks);
+                        break;
+                    case 5:
+                        TheShortestPathBetweenTasks(pathFileTasks);
+                        break;
+                    case 6:
+                        OptimizeBudget(pathFileTasks);
+                        break;
+                    case 7:
+                        AllocateResourcesBasedOnBudgetAndDeadline(pathFileTasks);
+                        break;
+                    case 8:
+                        return false;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        EnterToContinue();
+                        break;
+                }
+            }
+        }
+        /**
+ * @brief Displays the create task menu and processes user input for creating a task.
+ * @param pathFileTasks Path to the file containing task data.
+ * @return Returns true if the task is created successfully, false otherwise.
+ */
+        public bool CreateTaskMenu(string pathFileTasks)
+        {
+            ClearScreen();
+            Console.WriteLine("Create Task \n ");
+            Task newTask = new Task();
+
+            Console.Write("Enter task name: ");
+            newTask.TaskName = Console.ReadLine();
+
+            Console.Write("Enter task description: ");
+            newTask.TaskDescription = Console.ReadLine();
+
+            Console.Write("Enter your cost: ");
+            newTask.Cost = Convert.ToDouble(Console.ReadLine());
+
+            return CreateTask(newTask, pathFileTasks);
+        }
+        /**
+         * @brief Creates a new task and saves it to the specified file.
+         * @param task The task to be created.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if the task is created successfully, false otherwise.
+         */
+        public bool CreateTask(Task task, string pathFileTasks)
+        {
+
+            List<Task> tasks;
+
+            if (File.Exists(pathFileTasks))
+            {
+                string jsonString = File.ReadAllText(pathFileTasks);
+                tasks = JsonSerializer.Deserialize<List<Task>>(jsonString);
+            }
+            else
+            {
+                tasks = new List<Task>();
+            }
+            task.Id = GetNewTaskId(pathFileTasks);
+            task.Owner = LoggedInUser;
+            task.Cost = task.Cost;
+            tasks.Add(task);
+
+            string jsonStringUpdated = JsonSerializer.Serialize(tasks);
+            File.WriteAllText(pathFileTasks, jsonStringUpdated);
+
+            Console.WriteLine("Task created successfully.");
+            EnterToContinue();
+            return true;
+
+        }
+        /**
+         * @brief Displays the categorize task menu and processes user input for categorizing tasks.
+         * @param pathFileTasks Path to the file containing task data.
+         * @param pathFileCategories Path to the file containing category data.
+         * @return Returns true if the task is categorized successfully, false otherwise.
+         */
+        public bool CategorizeTaskMenu(string pathFileTasks, string pathFileCategories)
+        {
+            Task selectedTask = null;
+            Category selectedCategory = null;
+            List<Task> ownedTasks = LoadOwnedTasks(pathFileTasks);
+            List<Category> categories = LoadAllCategories(pathFileCategories);
+
+            do
+            {
+                ClearScreen();
+                Console.WriteLine("Categorize Task \n");
+
+                if (ownedTasks.Count == 0)
+                {
+                    Console.WriteLine("No tasks found.");
+                    EnterToContinue();
+                    return false;
+                }
+
+                PrintOwnedTasksToConsole(pathFileTasks);
+
+
+                Console.Write("Select a task to categorize. You can just select uncategorized tasks. (Type \"exit\" to exit): ");
+                int taskIndex;
+                string taskIndexString = Console.ReadLine();
+
+                if (taskIndexString.ToLower() == "exit")
+                {
+                    return false;
+                }
+
+                if (!int.TryParse(taskIndexString, out taskIndex))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                //Check if the task index is valid
+                if (taskIndex < 0)
+                {
+                    Console.WriteLine("Invalid task index. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+
+                //Check user has the task
+                foreach (Task task in ownedTasks)
+                {
+                    if (task.Id == taskIndex && task.Category == null)
+                    {
+                        selectedTask = task;
+                        break;
+                    }
+                }
+
+                if (selectedTask == null)
+                {
+                    Console.WriteLine("You do not have the task with the given index. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+                break;
+
+            } while (true);
+
+            do
+            {
+                //Write Selected Task to console
+
+                ClearScreen();
+                Console.WriteLine("Selected Task: ");
+                Console.WriteLine("----------------------------------------------------------------------------------------");
+                Console.WriteLine("| Task Id   | Task Name        | Task Description      | Deadline   | Category         |");
+                Console.WriteLine("----------------------------------------------------------------------------------------");
+
+                string taskId = selectedTask.Id.ToString().PadRight(9);
+                string taskName = selectedTask.TaskName.PadRight(16);
+                string taskDescription = selectedTask.TaskDescription.PadRight(21);
+                string deadline = !string.IsNullOrEmpty(selectedTask.Deadline) ? selectedTask.Deadline.PadRight(10) : "-".PadRight(10);
+                string taskCategory = selectedTask.Category != null ? selectedTask.Category.CategoryName.ToString().PadRight(16) : "-".PadRight(16);
+
+                Console.WriteLine($"| {taskId} | {taskName} | {taskDescription} | {deadline} | {taskCategory} |");
+                Console.WriteLine("----------------------------------------------------------------------------------------\n");
+                PrintCategoriesToConsole(pathFileCategories);
+
+                Console.Write("Select a category for the task (Type \"exit\" to exit): ");
+                int categoryIndex;
+                string categoryIndexString = Console.ReadLine();
+
+                if (categoryIndexString.ToLower() == "exit")
+                {
+                    return false;
+                }
+
+                if (!int.TryParse(categoryIndexString, out categoryIndex))
+                {
+                    HandleInputError();
+                    EnterToContinue();
+                    continue;
+                }
+
+                //Check if the category index is valid
+                if (categoryIndex < 0)
+                {
+                    Console.WriteLine("Invalid category index. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+
+                foreach (Category category in categories)
+                {
+                    if (category.Id == categoryIndex)
+                    {
+                        selectedCategory = category;
+                        break;
+                    }
+                }
+
+                //Check if the category index in the list
+                if (selectedCategory == null)
+                {
+                    Console.WriteLine("Invalid category index. Please try again.");
+                    EnterToContinue();
+                    continue;
+                }
+                break;
+
+            } while (true);
+            return CategorizeTask(selectedTask, selectedCategory, pathFileTasks);
+        }
+        /**
+         * @brief Categorizes a task by updating its category and saving it to the specified file.
+         * @param task The task to be categorized.
+         * @param category The category to assign to the task.
+         * @param pathFileTasks Path to the file containing task data.
+         * @return Returns true if the task is categorized successfully, false otherwise.
+         */
+        public bool CategorizeTask(Task task, Category category, string pathFileTasks)
+        {
+            List<Task> tasks = LoadAllTasks(pathFileTasks);
+
+            // foreach ile tasks listesindeki task'ları dönün ve seçilen task'ı bulun ve kategorisini güncelleyin
+            foreach (Task taskItem in tasks)
+            {
+                if (taskItem.Id == task.Id)
+                {
+                    taskItem.Category = category;
+                    break;
+                }
+            }
+
+            string updatedJsonString = JsonSerializer.Serialize(tasks);
+            File.WriteAllText(pathFileTasks, updatedJsonString);
+
+            Console.WriteLine("Task categorized successfully.");
+            EnterToContinue();
+            return true;
+        }
+
+
