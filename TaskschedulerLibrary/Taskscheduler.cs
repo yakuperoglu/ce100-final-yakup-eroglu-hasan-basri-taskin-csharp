@@ -2166,4 +2166,169 @@ namespace TaskschedulerLibrary
          */
 
 
+        //Max-Flow and Min-Cut Ford-Fulkerson Algorithm
+        private void AddEdge(List<Edge> edges, int from, int to, double capacity)
+        {
+            edges.Add(new Edge { From = from, To = to, Capacity = capacity, Flow = 0 });
+            edges.Add(new Edge { From = to, To = from, Capacity = 0, Flow = 0 }); // reverse edge
+        }
+        /**
+         * @brief Finds the maximum flow in a flow network using the Ford-Fulkerson algorithm.
+         * @param edges The list of edges.
+         * @param parent The parent array for BFS.
+         * @param visited The visited array for BFS.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         * @return The maximum flow.
+         */
+        private double FordFulkerson(List<Edge> edges, int[] parent, bool[] visited, int source, int sink)
+        {
+            double maxFlow = 0;
+            while (BFS(edges, parent, visited, source, sink))
+            {
+                double pathFlow = double.MaxValue;
+                for (int v = sink; v != source; v = parent[v])
+                {
+                    int u = parent[v];
+                    Edge edge = edges.Find(e => e.From == u && e.To == v);
+                    pathFlow = Math.Min(pathFlow, edge.Capacity - edge.Flow);
+                }
+
+                for (int v = sink; v != source; v = parent[v])
+                {
+                    int u = parent[v];
+                    Edge edge = edges.Find(e => e.From == u && e.To == v);
+                    edge.Flow += pathFlow;
+                    Edge reverseEdge = edges.Find(e => e.From == v && e.To == u);
+                    reverseEdge.Flow -= pathFlow;
+                }
+
+                maxFlow += pathFlow;
+            }
+            return maxFlow;
+        }
+        /**
+         * @brief Performs BFS for the Ford-Fulkerson algorithm.
+         * @param edges The list of edges.
+         * @param parent The parent array for BFS.
+         * @param visited The visited array for BFS.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         * @return True if there is a path from source to sink, false otherwise.
+         */
+        private bool BFS(List<Edge> edges, int[] parent, bool[] visited, int source, int sink)
+        {
+            Array.Fill(visited, false);
+            Queue<int> queue = new Queue<int>();
+            queue.Enqueue(source);
+            visited[source] = true;
+            parent[source] = -1;
+
+            while (queue.Count > 0)
+            {
+                int u = queue.Dequeue();
+                foreach (Edge edge in edges.Where(e => e.From == u && !visited[e.To] && e.Capacity > e.Flow))
+                {
+                    parent[edge.To] = u;
+                    visited[edge.To] = true;
+                    queue.Enqueue(edge.To);
+                    if (edge.To == sink) return true;
+                }
+            }
+            return false;
+        }
+        /**
+         * @brief Initializes the graph for the max-flow algorithms.
+         * @param tasks The list of tasks.
+         * @param edges The list of edges.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         */
+        private void InitializeGraph(List<Task> tasks, List<Edge> edges, int source, int sink)
+        {
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                AddEdge(edges, source, i + 1, tasks[i].Cost);
+                AddEdge(edges, i + 1, sink, tasks[i].Cost);
+            }
+        }
+        /**
+         * @brief Finds the maximum flow in a flow network using the Edmonds-Karp algorithm.
+         * @param edges The list of edges.
+         * @param parent The parent array for BFS.
+         * @param visited The visited array for BFS.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         * @return The maximum flow.
+         */
+        //Edmonds-Karp Algorithm
+        private double EdmondsKarp(List<Edge> edges, int[] parent, bool[] visited, int source, int sink)
+        {
+            double maxFlow = 0;
+            while (BFS(edges, parent, visited, source, sink))
+            {
+                double pathFlow = double.MaxValue;
+                for (int v = sink; v != source; v = parent[v])
+                {
+                    int u = parent[v];
+                    Edge edge = edges.FirstOrDefault(e => e.From == u && e.To == v);
+                    if (edge != null)
+                    {
+                        pathFlow = Math.Min(pathFlow, edge.Capacity - edge.Flow);
+                    }
+                }
+
+                for (int v = sink; v != source; v = parent[v])
+                {
+                    int u = parent[v];
+                    Edge edge = edges.FirstOrDefault(e => e.From == u && e.To == v);
+                    Edge reverseEdge = edges.FirstOrDefault(e => e.From == v && e.To == u);
+                    if (edge != null && reverseEdge != null)
+                    {
+                        edge.Flow += pathFlow;
+                        reverseEdge.Flow -= pathFlow;
+                    }
+                }
+
+                maxFlow += pathFlow;
+            }
+            return maxFlow;
+        }
+        /**
+         * @brief Finds the maximum flow in a flow network using Dinic's algorithm.
+         * @param tasks The list of tasks.
+         * @param edges The list of edges.
+         * @param level The level array for the level graph.
+         * @param parent The parent array for BFS.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         * @return The maximum flow.
+         */
+        //Dinic's Algorithm
+        private double DinicsAlgorithm(List<Task> tasks, List<Edge> edges, int[] level, int[] parent, int source, int sink)
+        {
+            // Implement Dinic's algorithm using level graph and blocking flow
+            double maxFlow = 0;
+            while (BuildLevelGraph(edges, level, source, sink))
+            {
+                int flow;
+                do
+                {
+                    flow = SendFlow(source, int.MaxValue, sink, edges, parent, level);
+                    maxFlow += flow;
+                } while (flow > 0);
+            }
+            return maxFlow;
+        }
+        /**
+         * @brief Builds the level graph for Dinic's algorithm.
+         * @param edges The list of edges.
+         * @param level The level array for the level graph.
+         * @param source The source vertex.
+         * @param sink The sink vertex.
+         * @return True if there is a level graph from source to sink, false otherwise.
+         */
+
+
+
 
