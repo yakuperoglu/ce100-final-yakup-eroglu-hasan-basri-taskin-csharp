@@ -379,5 +379,73 @@ namespace TaskschedulerLibrary.Tests
             // Assert
             Assert.False(result);
         }
+
+        [Fact]
+        public void DeadlineSettingMenu_SetDeadline_DoesntHaveEnoughTask_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+
+            var input = new StringReader("1\n2\n");
+            Console.SetIn(input);
+            var output = new StringWriter();
+            Console.SetOut(output);
+
+            bool result = taskScheduler.DeadlineSettingMenu(testFilePathTasks);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void SetDeadlineForTaskMenu_InvalidInputs_ShouldReturnFalse()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+            var input = new StringReader("Invalid\n-1\nexit");
+            Console.SetIn(input);
+            var output = new StringWriter();
+            Console.SetOut(output);
+
+            bool result = taskScheduler.SetDeadlineForTaskMenu(testFilePathTasks);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void SetDeadlineForTaskMenu_ValidInputs_ShouldReturnTrue()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+            var input = new StringReader("12\n10\n10\n2222");
+            Console.SetIn(input);
+            var output = new StringWriter();
+            Console.SetOut(output);
+
+            bool result = taskScheduler.SetDeadlineForTaskMenu(testFilePathTasks);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void SetDeadlineForTaskMenu_InvalidInputs_ShouldReturnTrue()
+        {
+            // Arrange
+            SetStartup();
+            CreateTestData();
+            var input = new StringReader("12\nqwe\n122\n10\nqwe\n1222\n12\nqwe\n2000\n2222");
+            Console.SetIn(input);
+            var output = new StringWriter();
+            Console.SetOut(output);
+
+            bool result = taskScheduler.SetDeadlineForTaskMenu(testFilePathTasks);
+
+            // Assert
+            Assert.True(result);
+        }
     }
 }
